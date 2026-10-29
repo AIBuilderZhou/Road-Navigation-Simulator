@@ -35,6 +35,8 @@ class Config_car_generator:
     num_cars_initially: int
     # The probability of generating a car every FRAME
     new_car_prob: float
+    # Number of new cars per generation
+    new_car_range: list[int]
 
 
 """ SIMULATION """
@@ -56,9 +58,9 @@ class Config_simulator:
 #Frame per second
 #Also representing frame per hour simulated in the program
 #This will affect the speed of car per frame and the generation of GIF file
-FPS = 240
+FPS = 60*4
 #The total frames in the simulatiom
-FRAMES = 240*10
+FRAMES = FPS*2
 #The scale of every PNG file generated
 PIC_SCALE = 2
 #Whether generate pictures of the mid-process in the simulation

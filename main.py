@@ -18,19 +18,20 @@ import imageio
 
 ''' CONFIG '''
 cfg_road = Config_road_generator(
-    num_nodes=30,
-    max_lanes=5,
+    num_nodes=50,
+    max_lanes=3,
     max_degree=4,
     edge_prob=0.2,
     force_single_road=[],
     connection_limit=10,
-    ring=True,
+    ring=False,
     exp_road_length=10,
     var_road_length=0.2,
     angle_variation=0.1)
 cfg_car = Config_car_generator(
-    num_cars_initially=40*200,
+    num_cars_initially=50*20,
     new_car_prob=1,
+    new_car_range=[20,100]
 )
 cfg_simulation = Config_simulator(
     standard_speed=80
@@ -61,11 +62,12 @@ for t in tqdm(range(FRAMES+1)):
     if SHOW_MID_PROCESS and t%FRAMES_PER_OUTPUT==0:
         visualize.draw(G,cars,t,frames,cfg_simulation.standard_speed)
     if random.random() < cfg_car.new_car_prob:
-        cars.append(car.car(num_cars+1,cfg_road.num_nodes, pos))
-        astarRes = astar.astar(G, cars[-1].startPt, cars[-1].endPt, pos)
-        cars[-1].route = astarRes
-        cars[-1].logs.append(("Spawned",t))
-        num_cars += 1
+        for i in range(random.randint(cfg_car.new_car_range[0],cfg_car.new_car_range[1])):
+            cars.append(car.car(num_cars+1,cfg_road.num_nodes, pos))
+            astarRes = astar.astar(G, cars[-1].startPt, cars[-1].endPt, pos)
+            cars[-1].route = astarRes
+            cars[-1].logs.append(("Spawned",t))
+            num_cars += 1
 
 ''' CALCULATE RESULTS'''
 recording.record_congestion(G)
