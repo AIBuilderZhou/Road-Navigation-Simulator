@@ -72,3 +72,9 @@ FRAMES_PER_OUTPUT = 30
 #This will only be effective when SHOW_MID_PROCESS is True
 #If it is true, the mid-process pictures will not be generated
 GENERATE_GIF = False
+
+#Replay a past report instead of generating a new scene.
+#"" = generate a new road network and cars from the parameters above.
+#"report-YYYYMMDD-HHMMSS.json" (or any readable path) = replay that report:
+#the road network, the car spawn plan and every running parameter are read from it.
+REPLAY_REPORT = ""
