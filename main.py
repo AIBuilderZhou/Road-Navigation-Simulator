@@ -18,7 +18,7 @@ import imageio
 
 ''' CONFIG '''
 cfg_road = Config_road_generator(
-    num_nodes=50,
+    num_nodes=100,
     max_lanes=3,
     max_degree=4,
     edge_prob=0.2,
@@ -29,9 +29,11 @@ cfg_road = Config_road_generator(
     var_road_length=0.2,
     angle_variation=0.1)
 cfg_car = Config_car_generator(
-    num_cars_initially=50*20,
-    new_car_prob=1,
-    new_car_range=[20,100]
+    #真实单位下这张 50 节点路网满负载约 1300 辆，200 辆是正常车流
+    num_cars_initially=200,
+    #一帧现在是 1 秒，所以每 30 秒尝试生成一次、每次 1~3 辆
+    new_car_prob=1/60,
+    new_car_range=[1,3]
 )
 cfg_simulation = Config_simulator(
     standard_speed=80
@@ -130,12 +132,28 @@ for i in cars:
     if i.destination:
         passed += 1
         tot_time += i.time_cost
-        tot_avg_speed += i.tot_distance / i.time_cost
-avg_time = tot_time/passed
-avg_speed = tot_avg_speed/num_cars
+        tot_avg_speed += i.tot_distance / i.time_cost if i.time_cost else 0.0
+avg_time = tot_time/passed if passed else 0.0
+avg_speed = tot_avg_speed/passed if passed else 0.0
+
+#网络层面的多指标：车辆加权平均车速 + 时序平均拥堵 + 服务水平分布
+tot_cars_now = sum(d["cars"] for _,_,d in G.edges(data=True))
+if tot_cars_now:
+    net_speed = sum(d["v_mean"]*d["cars"] for _,_,d in G.edges(data=True))/tot_cars_now
+else:   #网络此刻没车时退化为按道路长度加权的空间平均车速（=自由流）
+    tot_length = sum(d["length"] for _,_,d in G.edges(data=True))
+    net_speed = (sum(d["v_mean"]*d["length"] for _,_,d in G.edges(data=True))/tot_length
+                 if tot_length else 0.0)
+cong_series = [sum(d["congestion_logs"])/len(d["congestion_logs"])
+               for _,_,d in G.edges(data=True) if d["congestion_logs"]]
+mean_congestion = sum(cong_series)/len(cong_series) if cong_series else 0.0
+los_count = {g:0 for g in "ABCDEF"}
+for _,_,d in G.edges(data=True):
+    los_count[d.get("los","A")] = los_count.get(d.get("los","A"),0)+1
 
 ''' REPORTS, RESULT IMAGES AND GIF'''
 recording.save_logs()
-result_congestion.draw(G,passed,avg_time,avg_speed,cfg_simulation.standard_speed)
+result_congestion.draw(G,passed,avg_time,avg_speed,cfg_simulation.standard_speed,
+                       net_speed,mean_congestion,los_count)
 if GENERATE_GIF:
     imageio.mimsave(f"logs/gif/traffic{strftime('%Y%m%d-%H%M%S',localtime(time()))}.gif", frames, fps=FPS)

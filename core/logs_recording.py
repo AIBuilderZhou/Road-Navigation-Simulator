@@ -48,7 +48,12 @@ def restore_map(node:list[dict],road:list[dict]):
 
 def record_congestion(G:nx.Graph):
     for i in G.edges():
-        c = {"endpoints":i,"congestion_logs":G[i[0]][i[1]]["congestion_logs"]}
+        d = G[i[0]][i[1]]
+        c = {"endpoints":i,"congestion_logs":d["congestion_logs"]}
+        #多指标快照（旧报告没有这些字段，分析器会自动忽略未知字段）
+        for k in ("density","v_mean","speed_ratio","queue","los"):
+            if k in d:
+                c[k] = d[k]
         Congestion.append(c)
 
 

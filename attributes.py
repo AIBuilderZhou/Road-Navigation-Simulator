@@ -42,24 +42,38 @@ class Config_car_generator:
 """ SIMULATION """
 @dataclass
 class Config_simulator:
-    # maximum speed of a car to run if there is no congestion(km/h)
+    # maximum speed of the fastest road class (km/h); slower classes get less
     standard_speed: int
     #length of the car [km]
     car_length: float = 0.005
     #minimum safe distance [km]
     minimum_distance: float = 0.002
-    #reaction time [h]
+    #reaction time [h]  (used by the legacy density formula)
     reaction_time: float = 1.5/3600
     #minimum speed even though the road is fully stuck [km/h]
     minimum_speed: float = 5
+    #how many metres one length unit of the generator is (10 -> a 10 unit road is a 100 m block)
+    meters_per_unit: float = 10.0
+    #vehicles per km per lane at standstill -> used for density, queueing and spillback
+    jam_density: float = 130.0
+    #free-flow speed lost per missing lane (km/h); the widest road keeps standard_speed
+    lane_speed_step: float = 10.0
+    #IDM (Intelligent Driver Model) car-following parameters
+    idm_accel: float = 1.5           #maximum acceleration [m/s^2]
+    idm_decel: float = 2.0           #comfortable deceleration [m/s^2]
+    idm_time_gap: float = 1.2        #desired time headway [s]
+    idm_min_gap: float = 2.0         #standstill gap [m]
+    idm_delta: float = 4.0           #free-road exponent
+    #write one congestion sample every N frames (1 = every frame, keeps the analysis viewer exact)
+    log_every: int = 1
 
 
 #pic
-#Frame per second
-#Also representing frame per hour simulated in the program
-#This will affect the speed of car per frame and the generation of GIF file
-FPS = 60*4
-#The total frames in the simulatiom
+#Frames per simulated hour -> one frame lasts 3600/FPS seconds.
+#Car-following (IDM) needs a time step of about one second, so FPS should stay >= 1800;
+#240 (=15 s per frame) is only fine for the old density-only model.
+FPS = 24*1800
+#The total frames in the simulatiom (= 2 hours with FPS=3600)
 FRAMES = FPS*2
 #The scale of every PNG file generated
 PIC_SCALE = 2

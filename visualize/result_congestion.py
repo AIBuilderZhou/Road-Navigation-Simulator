@@ -7,7 +7,7 @@ from time import time,localtime,strftime
 
 
 
-def draw(G,passed,avg_time,avg_speed,speed):
+def draw(G,passed,avg_time,avg_speed,speed,net_speed=None,mean_congestion=None,los_count=None):
     #the real coordinates the generator stored in G
     pos = nx.get_node_attributes(G, "pos")
     edges = G.edges()
@@ -42,6 +42,12 @@ def draw(G,passed,avg_time,avg_speed,speed):
              f"Car passed: {passed}\n"
              f"Avg time cost: {round(avg_time, 3)}({round(avg_time * FPS, 3)}frames)\n"
              f"Avg speed: {round(avg_speed, 3)}")
+    if net_speed is not None:
+        stats += f"\nNetwork speed: {round(net_speed, 2)}"
+    if mean_congestion is not None:
+        stats += f"\nMean congestion: {round(mean_congestion, 3)}"
+    if los_count:
+        stats += "\nLOS: " + " ".join(f"{g}{los_count.get(g, 0)}" for g in "ABCDEF")
     fig.text(
         0.02,
         0.05,
