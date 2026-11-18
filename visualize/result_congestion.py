@@ -1,61 +1,68 @@
-import networkx as nx
-from attributes import *
+"""Draw the final congestion map and the run summary."""
+import os
+from time import localtime, strftime, time
+
 import matplotlib.pyplot as plt
-import matplotlib.cm as cm
-import matplotlib.colors as mcolors
-from time import time,localtime,strftime
+
+from visualize.road_draw import draw_network
 
 
-
-def draw(G,passed,avg_time,avg_speed,speed,net_speed=None,mean_congestion=None,los_count=None):
-    #the real coordinates the generator stored in G
-    pos = nx.get_node_attributes(G, "pos")
-    edges = G.edges()
-
-    #color
-    cmap = cm.RdYlGn_r
-    norm = mcolors.Normalize(vmin=0, vmax=1)
-    colors = [cmap(norm(sum(G[e[0]][e[1]]["congestion_logs"]) / len(G[e[0]][e[1]]["congestion_logs"]))) for e in edges]
-
-    #label - rounded to 1 decimal, the lengths are real distances now
-    edge_labels = {e: round(l, 1) for e, l in nx.get_edge_attributes(G, "length").items()}
-
-    #edge-width
-    width = [(G[i[0]][i[1]]["capacity"]/G[i[0]][i[1]]["length"])*2 for i in edges]
+def _mean_logs(d):
+    logs = d.get("congestion_logs") or []
+    if not logs:
+        return d.get("congestion", 0.0)
+    return sum(logs) / len(logs)
 
 
-    #draw
-    fig, ax = plt.subplots(figsize=(15*PIC_SCALE, 11.25*PIC_SCALE))
-    #plt.figure(figsize=(15, 11.25))
-    nx.draw_networkx_nodes(G, pos, node_size=300, node_color="lightblue")
-    nx.draw_networkx_labels(G, pos, font_size=10)
-    nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels,font_size=19)
-    nx.draw_networkx_edges(G, pos, width=width, alpha=0.6, edge_color=colors)
-
-
-    text_font_size = 18*PIC_SCALE
-
-    plt.title("Traffic Simulation Result - Congestion",size=text_font_size)
-    plt.axis("off")
-
-    stats = (f"SPEED: {speed}\n"
-             f"Car passed: {passed}\n"
-             f"Avg time cost: {round(avg_time, 3)}({round(avg_time * FPS, 3)}frames)\n"
-             f"Avg speed: {round(avg_speed, 3)}")
-    if net_speed is not None:
-        stats += f"\nNetwork speed: {round(net_speed, 2)}"
-    if mean_congestion is not None:
-        stats += f"\nMean congestion: {round(mean_congestion, 3)}"
-    if los_count:
-        stats += "\nLOS: " + " ".join(f"{g}{los_count.get(g, 0)}" for g in "ABCDEF")
-    fig.text(
-        0.02,
-        0.05,
-        stats,
-        fontsize=text_font_size,
-        ha="left",
-        va="bottom"
+def _los_line(label, counts):
+    if not counts:
+        return f"{label}: no data"
+    return f"{label}: " + " ".join(
+        f"{grade}{counts.get(grade, 0)}" for grade in "ABCDEF"
     )
-    fig.savefig(f"logs/results/congestion-{strftime('%Y%m%d-%H%M%S',localtime(time()))}.png")
 
-    plt.close('all')
+
+def draw(G, summary, run, standard_speed):
+    values = {(u, v): _mean_logs(d) for u, v, d in G.edges(data=True)}
+    fig, ax = plt.subplots(figsize=(15 * run.pic_scale, 11.25 * run.pic_scale))
+    draw_network(fig, ax, G, values, run)
+
+    title_size = 16 * run.pic_scale
+    text_size = 12 * run.pic_scale
+
+    mean_by_direction = summary.get("mean_congestion_by_direction", {})
+    los_by_direction = summary.get("los_count_by_direction", {})
+    route = summary.get("route_ms", {})
+    stats = (
+        f"Free-flow speed: {standard_speed} km/h\n"
+        f"Cars passed: {summary.get('cars_arrived', 0)} / "
+        f"{summary.get('cars_total', 0)}\n"
+        f"Avg time cost: {summary.get('avg_time_h', 0.0):.4f} h "
+        f"({summary.get('avg_time_h', 0.0) * 3600:.1f} s)\n"
+        f"Avg speed: {summary.get('avg_speed_kmh', 0.0):.2f} km/h\n"
+        f"Network speed: {summary.get('network_speed_kmh', 0.0):.2f} km/h\n"
+        f"Mean congestion: {summary.get('mean_congestion', 0.0):.4f} "
+        f"(A->B {mean_by_direction.get('AB', 0.0):.4f}, "
+        f"B->A {mean_by_direction.get('BA', 0.0):.4f})\n"
+        f"{_los_line('LOS A->B', los_by_direction.get('AB'))}\n"
+        f"{_los_line('LOS B->A', los_by_direction.get('BA'))}\n"
+        f"Route A*: {route.get('calls', 0)} calls, "
+        f"{route.get('mean_ms', 0.0):.3f} ms avg, "
+        f"{route.get('p95_ms', 0.0):.3f} ms p95"
+    )
+    ax.set_title("Traffic Simulation Result - Congestion", size=title_size)
+    fig.text(0.02, 0.04, stats, fontsize=text_size, ha="left", va="bottom",
+             bbox={"facecolor": "white", "alpha": 0.78, "edgecolor": "none",
+                   "pad": 4})
+
+    os.makedirs("logs/results", exist_ok=True)
+    stamp = strftime("%Y%m%d-%H%M%S", localtime(time()))
+    path = f"logs/results/congestion-{stamp}.png"
+    if os.path.exists(path):
+        base, ext = os.path.splitext(path)
+        counter = 1
+        while os.path.exists(f"{base}-{counter}{ext}"):
+            counter += 1
+        path = f"{base}-{counter}{ext}"
+    fig.savefig(path)
+    plt.close(fig)

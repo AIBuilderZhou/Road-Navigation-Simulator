@@ -31,14 +31,14 @@
   #tip{position:absolute;pointer-events:none;background:#000c;border:1px solid var(--line);border-radius:6px;
        padding:4px 7px;font-size:12px;opacity:0;transition:opacity .12s;white-space:nowrap;z-index:5}
   #legend{position:absolute;left:12px;bottom:12px;background:#0008;border:1px solid var(--line);border-radius:6px;
-          padding:6px 8px;font-size:11px;color:var(--muted)}
+          padding:6px 8px;font-size:11px;color:var(--muted);max-width:520px}
   #legend .bar{height:8px;width:140px;border-radius:4px;margin:4px 0;
      background:linear-gradient(90deg,#006837,#1a9850,#66bd63,#a6d96a,#d9ef8b,#ffffbf,#fee08b,#fdae61,#f46d43,#d73027,#a50026)}
   #legend .ends{display:flex;justify-content:space-between}
-  #side{width:400px;border-left:1px solid var(--line);background:var(--panel);overflow-y:auto;padding:12px}
+  #side{width:430px;border-left:1px solid var(--line);background:var(--panel);overflow-y:auto;padding:12px}
   #side h2{font-size:14px;margin:0 0 8px}
   #side h3{font-size:12px;color:var(--muted);margin:14px 0 6px;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
-  .kv{display:grid;grid-template-columns:110px 1fr;gap:4px 8px}
+  .kv{display:grid;grid-template-columns:120px 1fr;gap:4px 8px}
   .kv .k{color:var(--muted)}
   .kv .v{font-variant-numeric:tabular-nums;word-break:break-all}
   table{width:100%;border-collapse:collapse;font-size:12px}
@@ -53,12 +53,16 @@
   .pill{display:inline-block;padding:1px 7px;border-radius:10px;font-size:11px;border:1px solid var(--line);color:var(--muted)}
   .pill.arr{color:#3fb950;border-color:#3fb95066}
   .pill.run{color:var(--warn);border-color:#f0883e66}
+  .dirBlock{border:1px solid var(--line);border-radius:6px;padding:8px 10px;margin:8px 0;background:var(--panel2)}
+  .dirBlock.cur{border-color:var(--accent);box-shadow:0 0 0 1px #58a6ff55 inset}
+  .dirBlock h4{margin:0 0 6px;font-size:13px;display:flex;align-items:center;gap:6px}
+  .dirTag{color:var(--muted);font-weight:400;font-size:11px}
   footer{background:var(--panel);border-top:1px solid var(--line);padding:8px 12px}
   .row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
   #frames{flex:1;min-width:200px}
   .stats{color:var(--muted);font-size:12px;margin-top:6px;display:flex;gap:16px;flex-wrap:wrap;font-variant-numeric:tabular-nums}
   .stats b{color:var(--fg);font-weight:600}
-  #chartBox{height:180px;position:relative;margin-top:6px}
+  #chartBox{height:210px;position:relative;margin-top:6px}
   #overlay{position:fixed;inset:0;background:#000a;display:none;align-items:center;justify-content:center;
            flex-direction:column;gap:10px;z-index:50;font-size:14px}
   #overlay.on{display:flex}
@@ -66,6 +70,45 @@
            animation:spin .8s linear infinite}
   @keyframes spin{to{transform:rotate(360deg)}}
   .swatch{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:5px}
+
+  /* Bottom analysis drawer */
+  #analysis{flex:0 0 360px;display:flex;flex-direction:column;min-height:0;
+            border-top:1px solid var(--line);background:var(--panel)}
+  #analysis.hidden{display:none}
+  #analysis.collapsed{flex-basis:37px}
+  #analysis.collapsed .analysisRange,#analysis.collapsed #analysisBody{display:none}
+  .analysisHead{display:flex;align-items:center;gap:8px;padding:6px 12px;flex-wrap:wrap;
+                border-bottom:1px solid var(--line);min-height:37px}
+  #analysisTabs{display:flex;gap:3px;background:var(--panel2);border:1px solid var(--line);
+                border-radius:6px;padding:2px}
+  #analysisTabs button{background:none;border:none;padding:3px 9px;color:var(--muted)}
+  #analysisTabs button.active{background:#1f6feb;color:#fff;border-radius:4px}
+  .analysisRange{display:flex;align-items:center;gap:6px;padding:5px 12px;flex-wrap:wrap;
+                 border-bottom:1px solid var(--line);color:var(--muted);font-size:12px}
+  .analysisRange input{width:86px}
+  .analysisMsg{color:var(--muted);font-size:11px;margin-left:6px}
+  .hoverReadout{color:var(--accent);font-size:11px;margin-left:6px;font-variant-numeric:tabular-nums}
+  #analysisBody{flex:1;min-height:0;overflow:auto;padding:6px 12px 10px}
+  #brushWrap{position:relative;height:38px;margin:2px 0 5px}
+  #brushCanvas{width:100%;height:38px;display:block;cursor:crosshair}
+  #brushHint{position:absolute;right:8px;top:3px;color:var(--muted);font-size:10px;
+             pointer-events:none;background:#0009;border-radius:4px;padding:1px 5px}
+  #analysisStats{display:flex;gap:6px;flex-wrap:wrap;margin:2px 0 8px}
+  .aStat{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:5px 8px;
+         min-width:118px;flex:1}
+  .aStat .k{display:block;color:var(--muted);font-size:10px}
+  .aStat .v{display:block;color:var(--fg);font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
+  .aStat .sub{display:block;color:var(--muted);font-size:10px}
+  .chartGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .chartCard{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:6px 8px;min-width:0}
+  .chartCard.wide{grid-column:1/-1}
+  .chartCard h4{margin:0 0 4px;font-size:12px;color:var(--fg);font-weight:600}
+  .chartCard .chartBox{height:175px;position:relative}
+  .chartCard .chartBox.tall{height:225px}
+  .aTable{max-height:215px;overflow:auto;border:1px solid var(--line);border-radius:6px}
+  .aTable th,.aTable td{padding:3px 6px}
+  .aNote{color:var(--muted);font-size:12px;padding:14px;text-align:center}
+  @media (max-width:1100px){ .chartGrid{grid-template-columns:1fr} #analysis{flex-basis:320px} }
 </style>
 </head>
 <body>
@@ -87,13 +130,49 @@
     <svg id="map"></svg>
     <div id="tip"></div>
     <div id="legend">
-      <div>颜色 = 当前帧拥堵度　｜　线宽 = 车道数×2　｜　选中 = 蓝色外圈</div>
+      <div>颜色 = 当前帧拥堵度　｜　线宽 = 车道数×2</div>
+      <div id="legendDir">双向道路：每个方向画在自己行进方向的右侧（不画箭头）</div>
       <div class="bar"></div>
       <div class="ends"><span>0（畅通）</span><span>1（堵死）</span></div>
     </div>
   </div>
   <aside id="side"></aside>
 </main>
+
+<section id="analysis" class="hidden">
+  <div class="analysisHead">
+    <button id="btnAnalysisToggle" title="收起/展开分析面板">收起分析</button>
+    <nav id="analysisTabs">
+      <button class="active" data-atab="network">网络时序</button>
+      <button data-atab="dist">分布</button>
+      <button data-atab="roads">道路窗口</button>
+      <button data-atab="scatter">行程散点</button>
+    </nav>
+    <span id="hoverReadout" class="hoverReadout">鼠标悬停图表可读数；点击曲线跳到该帧</span>
+    <span class="spacer"></span>
+    <span id="analysisMsg" class="analysisMsg"></span>
+    <button id="btnCsv">导出当前 CSV</button>
+  </div>
+  <div class="analysisRange">
+    <span>分析窗口</span>
+    <input type="number" id="winStart" min="0" value="0" step="1">
+    <span>–</span>
+    <input type="number" id="winEnd" min="0" value="0" step="1">
+    <button id="btnWinApply">应用</button>
+    <button id="btnWinAll">全程</button>
+    <button data-winpreset="head">前 25%</button>
+    <button data-winpreset="tail">后 25%</button>
+    <span id="winInfo" class="analysisMsg"></span>
+  </div>
+  <div id="analysisBody">
+    <div id="brushWrap">
+      <canvas id="brushCanvas"></canvas>
+      <div id="brushHint">拖动选择分析帧范围</div>
+    </div>
+    <div id="analysisStats"></div>
+    <div id="analysisPane"></div>
+  </div>
+</section>
 
 <footer>
   <div class="row">
@@ -112,8 +191,7 @@
 "use strict";
 
 /* ------------------------------------------------------------------ *
- *  常量：与 visualize/result_congestion.py 使用的 RdYlGn_r 完全一致
- *  （11 个 ColorBrewer 锚点，_r = 低拥堵绿、高拥堵红）
+ *  Colour ramp: same 11 ColorBrewer anchors as RdYlGn_r in matplotlib.
  * ------------------------------------------------------------------ */
 const RDYLGN_R = ['#006837','#1a9850','#66bd63','#a6d96a','#d9ef8b','#ffffbf',
                   '#fee08b','#fdae61','#f46d43','#d73027','#a50026'];
@@ -129,26 +207,32 @@ function congestionColor(v){
 }
 
 /* ------------------------------------------------------------------ *
- *  状态
+ *  State
  * ------------------------------------------------------------------ */
 const S = {
   nodes: [], nodeById: new Map(),
-  roads: [], roadByKey: new Map(),
+  roads: [], roadById: new Map(), roadByDir: new Map(),
   cars: [], carById: new Map(),
-  frames: 0, frame: 0,
+  frames: 0, frame: 0, logEvery: 1, fps: 0,
   rangeMin: 0, rangeMax: 0,
-  selRoad: null, selCar: null,
-  chart: null, svg: null, roadEls: [], nodeEl: null,
-  haloEl: null, labels: [], nodeCircles: [], viewBox: null, ro: null,
-  carPathEl: null, dotEl: null, fileName: ''
+  winStart: 0, winEnd: 0,
+  analysisTab: 'network', analysisOpen: true,
+  analysisCharts: [], activityCache: null, hoverFrame: null, brushDrag: null,
+  selRoad: null, selDir: null, selCar: null,
+  chart: null, svg: null, lineItems: [],
+  nodeCircles: [], labels: [], viewBox: null, ro: null,
+  haloEl: null, carPathEl: null, dotEl: null,
+  scale: 1, flipY: 0, fileName: '', legacy: false
 };
 
 const $ = id => document.getElementById(id);
-const fmt = (x, d) => (x === null || x === undefined || Number.isNaN(x)) ? '—' : Number(x).toFixed(d === undefined ? 3 : d);
+const fmt = (x, d) => (x === null || x === undefined || Number.isNaN(x))
+  ? '—' : Number(x).toFixed(d === undefined ? 3 : d);
 const key2 = (a,b) => (a < b ? a + '-' + b : b + '-' + a);
+const dirKey = (a,b) => a + '>' + b;
 
 /* ------------------------------------------------------------------ *
- *  解析：优先 Web Worker（file:// 下 Chrome 禁止 blob worker，自动回退主线程）
+ *  Report parsing (worker on file://; main-thread fallback)
  * ------------------------------------------------------------------ */
 const WORKER_SRC = `
 self.onmessage = function(e){
@@ -161,12 +245,12 @@ function parseSmart(text, done, fail){
   try {
     worker = new Worker(URL.createObjectURL(new Blob([WORKER_SRC], {type:'application/javascript'})));
   } catch (e) { worker = null; }
-  if (!worker){                       // file:// 直开时的回退
+  if (!worker){
     setTimeout(() => { try { done(JSON.parse(text)); } catch (e) { fail(e); } }, 0);
     return;
   }
   let settled = false;
-  const fallback = () => {            // worker 不可用（加载失败/被拦）→ 主线程解析
+  const fallback = () => {
     if (settled) return; settled = true;
     try { worker.terminate(); } catch (e) {}
     setTimeout(() => { try { done(JSON.parse(text)); } catch (e) { fail(e); } }, 0);
@@ -182,114 +266,200 @@ function parseSmart(text, done, fail){
 }
 
 /* ------------------------------------------------------------------ *
- *  载入报告
+ *  Scene builder
  * ------------------------------------------------------------------ */
-const overlay = $('overlay'), overlayText = $('overlayText');
-function showOverlay(t){ overlayText.textContent = t || '正在解析报告…'; overlay.classList.add('on'); }
-function hideOverlay(){ overlay.classList.remove('on'); }
+function normalizeCar(c, index){
+  const route = Array.isArray(c.route) ? c.route.slice() : [];
+  const start = (c.start !== undefined) ? c.start
+    : (c.startPt !== undefined ? c.startPt : route[0]);
+  const goal = (c.goal !== undefined) ? c.goal
+    : (c.endPt !== undefined ? c.endPt : route[route.length - 1]);
+  let events = [];
+  let spawn = 0;
+  let arrived = false;
+  let arriveFrame = null;
+
+  if (Array.isArray(c.events)){
+    events = c.events.slice().sort((a,b) => a.frame - b.frame);
+    spawn = (c.spawn_frame !== undefined && c.spawn_frame >= 0)
+      ? c.spawn_frame : (events.length ? events[0].frame : 0);
+    arrived = !!c.arrived;
+    arriveFrame = (c.arrive_frame !== undefined && c.arrive_frame >= 0)
+      ? c.arrive_frame : null;
+  } else {
+    /* Legacy car_logs: ("Spawned", frame), numeric entry frames, "end". */
+    const logs = c.logs || [];
+    spawn = Array.isArray(logs[0]) ? (logs[0][1] | 0) : 0;
+    const tail = logs.slice(1);
+    arrived = tail.length > 0 && tail[tail.length - 1] === 'end';
+    const nums = tail.filter(x => typeof x === 'number');
+    events = [{frame:spawn, type:'spawn', node:start}];
+    for (let k = 0; k < nums.length; k++){
+      const idx = k + 1;
+      if (idx + 1 < route.length){
+        events.push({frame:nums[k], type:'enter', from:route[idx], to:route[idx+1]});
+      }
+    }
+    arriveFrame = arrived ? (nums.length ? nums[nums.length - 1] : spawn) : null;
+  }
+
+  if (arrived && (arriveFrame === null || arriveFrame === undefined)) arriveFrame = spawn;
+  if (arrived && !events.some(e => e.type === 'arrive')){
+    events.push({frame:arriveFrame, type:'arrive', node:goal});
+  }
+  events.sort((a,b) => a.frame - b.frame);
+
+  return {
+    id: (c.id !== undefined ? c.id : index),
+    start, goal, route, events, spawn, arrived, arriveFrame,
+    roads: Math.max(0, route.length - 1),
+    time_cost: c.time_cost,
+    total_distance: c.total_distance,
+    startPt: start, endPt: goal
+  };
+}
 
 function buildScene(report, fileName){
-  const nodes = (report.nodes || report.map_nodes || []).slice();
-  const roadsRaw = (report.roads || []).slice();
-  const cong = (report.congestion || report.congestion_logs || []).slice();
-  const carsRaw = (report.car_logs || report.cars || report.carLogs || []).slice();
+  S.legacy = !Array.isArray(report.cars);
+  const nodesRaw = report.nodes || report.map_nodes || [];
+  const roadsRaw = report.roads || [];
+  const congRaw = report.congestion || report.congestion_logs || [];
+  const carsRaw = report.cars || report.car_logs || [];
+  const params = report.params || {};
+  const run = report.run || params.run || {};
+  const sim = params.simulator || {};
 
-  // 拥堵序列按 (端点对) 建索引
-  const congByKey = new Map();
-  for (const c of cong){
-    const ep = c.endpoints || c.edge || c.road;
-    if (!ep || ep.length < 2) continue;
-    congByKey.set(key2(ep[0], ep[1]), c.congestion_logs || c.logs || []);
-  }
-  S.nodes = nodes.map(n => ({ id:n.id, x:n.pos[0], y:n.pos[1], tiled:n.tiled_pos, degrees:n.degrees, connection:n.connection }));
+  S.logEvery = Math.max(1, Number(sim.log_every || 1));
+  S.fps = Number(run.FPS) || 0;
+  S.nodes = nodesRaw.map(n => ({
+    id:n.id, x:n.pos[0], y:n.pos[1], tiled:n.tiled_pos,
+    degrees:n.degrees, connection:n.connection
+  }));
   S.nodeById = new Map(S.nodes.map(n => [n.id, n]));
-  S.roads = roadsRaw.map((r, i) => {
-    const a = r.ptA !== undefined ? r.ptA : r.a, b = r.ptB !== undefined ? r.ptB : r.b;
-    const logs = congByKey.get(key2(a,b)) || null;
-    return { i, a, b, length: (r.length !== undefined ? r.length : null), lanes: r.lanes, logs, key: key2(a,b) };
-  });
-  S.roadByKey = new Map(S.roads.map(r => [r.key, r]));
 
-  // 车：把 logs 归一化成 spawn / 事件时间数组 / 是否到达
-  S.cars = carsRaw.map(c => {
-    const logs = c.logs || [];
-    let spawn = 0;
-    if (Array.isArray(logs[0])) spawn = logs[0][1] | 0;
-    else if (typeof c.spawn_frame === 'number') spawn = c.spawn_frame;
-    const tail = logs.slice(1);
-    const arrived = tail.length > 0 && tail[tail.length-1] === 'end';
-    const nums = tail.filter(x => typeof x === 'number');
-    const route = c.route || [];
-    const roads = Math.max(0, route.length - 1);
-    const arrive = arrived ? nums[nums.length-1] : null;
-    const last = nums.length ? nums[nums.length-1] : spawn;
-    return {
-      id: c.id, startPt: c.startPt, endPt: c.endPt, route, nums, spawn, arrived, arrive, last,
-      roads, time_cost: c.time_cost, total_distance: c.total_distance,
-      start: c.startPt !== undefined ? c.startPt : route[0],
-      goal: c.endPt !== undefined ? c.endPt : route[route.length-1]
+  const directed = new Map();
+  const undirected = new Map();
+  for (const c of congRaw){
+    if (c.from !== undefined && c.to !== undefined){
+      directed.set(dirKey(c.from, c.to), c);
+    } else if (Array.isArray(c.endpoints) && c.endpoints.length >= 2){
+      undirected.set(key2(c.endpoints[0], c.endpoints[1]), c);
+    }
+  }
+
+  S.roads = roadsRaw.map((r, i) => {
+    const a = (r.ptA !== undefined ? r.ptA : r.a);
+    const b = (r.ptB !== undefined ? r.ptB : r.b);
+    const road = {
+      i, id: (r.id !== undefined ? r.id : i), a, b,
+      length: (r.length !== undefined ? r.length : null),
+      lanes: (r.lanes !== undefined ? r.lanes : 1),
+      dirs: []
     };
+    const fwd = directed.get(dirKey(a, b));
+    const bwd = directed.get(dirKey(b, a));
+    if (fwd || bwd){
+      if (fwd) road.dirs.push({from:a, to:b, data:fwd, legacy:false});
+      if (bwd) road.dirs.push({from:b, to:a, data:bwd, legacy:false});
+    } else {
+      const old = undirected.get(key2(a, b));
+      if (old) road.dirs.push({from:a, to:b, data:old, legacy:true});
+    }
+    return road;
   });
+  S.roadById = new Map(S.roads.map(r => [r.id, r]));
+  S.roadByDir = new Map();
+  for (const r of S.roads){
+    for (const d of r.dirs) S.roadByDir.set(dirKey(d.from, d.to), r);
+  }
+
+  S.cars = carsRaw.map((c, i) => normalizeCar(c, i));
   S.carById = new Map(S.cars.map(c => [c.id, c]));
 
-  S.frames = 1;
-  for (const r of S.roads) if (r.logs) S.frames = Math.max(S.frames, r.logs.length);
-  for (const c of S.cars) S.frames = Math.max(S.frames, c.last + 1, c.spawn + 1);
-  S.frames = Math.max(1, S.frames);
+  let maxFrame = 0;
+  for (const r of S.roads){
+    for (const d of r.dirs){
+      const logs = d.data && d.data.congestion_logs;
+      if (logs && logs.length) maxFrame = Math.max(maxFrame, (logs.length - 1) * S.logEvery);
+    }
+  }
+  for (const c of S.cars){
+    maxFrame = Math.max(maxFrame, c.spawn, c.arriveFrame || 0);
+    for (const e of c.events) maxFrame = Math.max(maxFrame, e.frame);
+  }
+  /* run.FRAMES is the last frame index, so the number of frames is +1. */
+  const declared = Number(run.FRAMES !== undefined ? run.FRAMES
+    : (run.frames !== undefined ? run.frames : -1));
+  S.frames = Math.max(1, declared + 1, maxFrame + 1);
 
-  S.selRoad = null; S.selCar = null;
+  S.selRoad = null; S.selDir = null; S.selCar = null;
   S.frame = 0;
   S.rangeMin = 0; S.rangeMax = S.frames - 1;
+  S.winStart = 0; S.winEnd = S.frames - 1;
+  S.analysisTab = 'network';
+  if (S.analysisCharts && S.analysisCharts.length) destroyAnalysisCharts();
+  if (S.chart){ try { S.chart.destroy(); } catch (e) {} S.chart = null; }
+  S.analysisCharts = [];
+  S.activityCache = null;
+  S.hoverFrame = null;
+  S.brushDrag = null;
   S.fileName = fileName || '';
 }
 
-function loadReport(report, fileName){
-  buildScene(report, fileName);
-  const parts = [ (fileName || '报告'),
-    '节点 ' + S.nodes.length, '道路 ' + S.roads.length,
-    '车 ' + S.cars.length.toLocaleString(), '帧 ' + S.frames.toLocaleString() ];
-  if (!S.roads.some(r => r.logs)) parts.push('⚠ 报告内没有 congestion 数据');
-  if (!S.cars.length) parts.push('⚠ 报告内没有 car_logs（旧版报告）');
-  $('fileMeta').textContent = parts.join(' · ');
-  drawMap();
-  setRange(0, S.frames - 1);
-  setFrame(0);
-  renderSide();
-  requestAnimationFrame(applyScreenScale);   // 面板内容落定后按最终尺寸再校正一次标记大小
+function valueFor(dir, frame){
+  if (!dir || !dir.data) return null;
+  const logs = dir.data.congestion_logs || dir.data.logs;
+  if (!logs || !logs.length) return null;
+  const idx = Math.max(0, Math.min(logs.length - 1,
+    Math.floor(frame / Math.max(1, S.logEvery))));
+  return logs[idx];
 }
 
-$('btnLoad').onclick = () => $('file').click();
-$('file').onchange = e => {
-  const f = e.target.files && e.target.files[0];
-  if (!f) return;
-  showOverlay('正在读取 ' + f.name + ' …');
-  const reader = new FileReader();
-  reader.onerror = () => { hideOverlay(); alert('读取文件失败'); };
-  reader.onload = () => {
-    showOverlay('正在解析 ' + (f.size/1048576).toFixed(1) + ' MB …');
-    const text = reader.result;
-    parseSmart(text,
-      report => { try { loadReport(report, f.name); } catch (err) { alert('报告结构异常：' + err.message); } hideOverlay(); },
-      err => { hideOverlay(); alert('JSON 解析失败：' + err.message); });
-  };
-  reader.readAsText(f);
-  e.target.value = '';
-};
+function dirStats(dir){
+  const logs = dir && dir.data && dir.data.congestion_logs;
+  if (!logs || !logs.length) return null;
+  let sum = 0, max = -Infinity, min = Infinity, busy = 0;
+  for (const v of logs){
+    sum += v;
+    if (v > max) max = v;
+    if (v < min) min = v;
+    if (v > 0.05) busy++;
+  }
+  return {mean:sum / logs.length, max, min, busy:busy / logs.length, n:logs.length};
+}
 
 /* ------------------------------------------------------------------ *
- *  左侧路网图（SVG）
+ *  SVG map
  * ------------------------------------------------------------------ */
+const LANE_PX = 2;
+const MAX_LANES = 5;
+const NODE_R_PX = (LANE_PX * MAX_LANES + 4) / 2;
+const CAR_R_PX = NODE_R_PX * 0.8;
+const LABEL_DY_PX = NODE_R_PX + 3;
+
+function roadWidthPx(road){ return Math.max(1, road.lanes || 1) * LANE_PX; }
+
+function lineOffsetPx(road){
+  /* Half of the drawn line width plus a 2 px gap to the centre line. */
+  return (roadWidthPx(road) + 2) / 2 + 1;
+}
+
 function drawMap(){
   const svg = $('map');
   svg.innerHTML = '';
   if (!S.nodes.length) return;
+
   const xs = S.nodes.map(n => n.x), ys = S.nodes.map(n => n.y);
-  const minX = Math.min(...xs), maxX = Math.max(...xs), minY = Math.min(...ys), maxY = Math.max(...ys);
-  const padX = (maxX - minX) * 0.06 + 1, padY = (maxY - minY) * 0.06 + 1;
-  const vb = [minX - padX, minY - padY, (maxX - minX) + 2*padX, (maxY - minY) + 2*padY];
+  const minX = Math.min(...xs), maxX = Math.max(...xs);
+  const minY = Math.min(...ys), maxY = Math.max(...ys);
+  const padX = (maxX - minX) * 0.06 + 1;
+  const padY = (maxY - minY) * 0.06 + 1;
+  const vb = [minX - padX, minY - padY,
+              (maxX - minX) + 2*padX, (maxY - minY) + 2*padY];
   svg.setAttribute('viewBox', vb.join(' '));
   svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-  S.flipY = (maxY + minY);        // y 轴翻转：SVG 的 y 向下
+  S.flipY = maxY + minY;
+  S.viewBox = vb;
 
   const NS = 'http://www.w3.org/2000/svg';
   const gHalo = document.createElementNS(NS, 'g');
@@ -297,86 +467,137 @@ function drawMap(){
   const gCar  = document.createElementNS(NS, 'g');
   const gNode = document.createElementNS(NS, 'g');
   svg.append(gHalo, gRoad, gCar, gNode);
-  S.viewBox = vb;
 
-  // 选中道路的描边（画在路下面，只露出一圈光晕，不遮挡拥堵颜色）
   S.haloEl = document.createElementNS(NS, 'line');
   S.haloEl.setAttribute('stroke', '#58a6ff');
-  S.haloEl.setAttribute('stroke-opacity', '0.65');
+  S.haloEl.setAttribute('stroke-opacity', '0.5');
   S.haloEl.setAttribute('stroke-linecap', 'round');
   S.haloEl.setAttribute('vector-effect', 'non-scaling-stroke');
   S.haloEl.style.display = 'none';
   gHalo.appendChild(S.haloEl);
 
-  S.roadEls = [];
-  for (const r of S.roads){
-    const A = S.nodeById.get(r.a), B = S.nodeById.get(r.b);
-    if (!A || !B) { S.roadEls.push(null); continue; }
-    const ln = document.createElementNS(NS, 'line');
-    ln.setAttribute('x1', A.x); ln.setAttribute('y1', S.flipY - A.y);
-    ln.setAttribute('x2', B.x); ln.setAttribute('y2', S.flipY - B.y);
-    ln.setAttribute('stroke-width', roadWidthPx(r));   // 线宽 = 车道数 × 2（同原代码 capacity/length*2）
-    ln.setAttribute('vector-effect', 'non-scaling-stroke');   // 线宽以像素为单位，不随缩放变化
-    ln.setAttribute('stroke-linecap', 'round');
-    ln.style.cursor = 'pointer';
-    ln.addEventListener('click', ev => { ev.stopPropagation(); selectRoad(r); });
-    ln.addEventListener('mousemove', ev => showTip(ev, r));
-    ln.addEventListener('mouseleave', hideTip);
-    gRoad.appendChild(ln);
-    S.roadEls.push(ln);
+  S.lineItems = [];
+  for (const road of S.roads){
+    const dirs = road.dirs.length ? road.dirs : [null];
+    for (const dir of dirs){
+      const ln = document.createElementNS(NS, 'line');
+      ln.setAttribute('stroke-width', roadWidthPx(road));
+      ln.setAttribute('vector-effect', 'non-scaling-stroke');
+      ln.setAttribute('stroke-linecap', 'round');
+      ln.setAttribute('stroke', '#8b98a5');
+      ln.style.cursor = 'pointer';
+      ln.addEventListener('click', ev => {
+        ev.stopPropagation();
+        selectRoad(road, dir);
+      });
+      ln.addEventListener('mousemove', ev => showTip(ev, road, dir));
+      ln.addEventListener('mouseleave', hideTip);
+      gRoad.appendChild(ln);
+      S.lineItems.push({el:ln, road, dir});
+    }
   }
-  // 选中车时画整体路线
+
   S.carPathEl = document.createElementNS(NS, 'polyline');
-  S.carPathEl.setAttribute('fill','none');
-  S.carPathEl.setAttribute('stroke','#58a6ff');
+  S.carPathEl.setAttribute('fill', 'none');
+  S.carPathEl.setAttribute('stroke', '#58a6ff');
   S.carPathEl.setAttribute('stroke-width', 4);
   S.carPathEl.setAttribute('stroke-opacity', .9);
-  S.carPathEl.setAttribute('stroke-dasharray','7 5');
-  S.carPathEl.setAttribute('vector-effect','non-scaling-stroke');
+  S.carPathEl.setAttribute('stroke-dasharray', '7 5');
+  S.carPathEl.setAttribute('vector-effect', 'non-scaling-stroke');
   S.carPathEl.style.display = 'none';
   gCar.appendChild(S.carPathEl);
 
-  S.nodeEl = gNode;
   S.nodeCircles = []; S.labels = [];
   for (const n of S.nodes){
     const c = document.createElementNS(NS, 'circle');
-    c.setAttribute('cx', n.x); c.setAttribute('cy', S.flipY - n.y);
-    c.setAttribute('vector-effect','non-scaling-stroke');
-    c.setAttribute('fill', '#9fb4c7'); c.setAttribute('stroke', '#0d1218'); c.setAttribute('stroke-width', 1.2);
-    gNode.appendChild(c); S.nodeCircles.push(c);
+    c.setAttribute('cx', n.x);
+    c.setAttribute('cy', S.flipY - n.y);
+    c.setAttribute('vector-effect', 'non-scaling-stroke');
+    c.setAttribute('fill', '#9fb4c7');
+    c.setAttribute('stroke', '#0d1218');
+    c.setAttribute('stroke-width', 1.2);
+    gNode.appendChild(c);
+    S.nodeCircles.push(c);
+
     const t = document.createElementNS(NS, 'text');
     t.setAttribute('x', n.x);
     t.dataset.baseY = S.flipY - n.y;
-    t.setAttribute('text-anchor','middle');
-    t.setAttribute('fill', '#8b98a5'); t.setAttribute('class','nodeLabel');
+    t.setAttribute('text-anchor', 'middle');
+    t.setAttribute('fill', '#8b98a5');
+    t.setAttribute('class', 'nodeLabel');
     t.style.display = $('showIds').checked ? '' : 'none';
     t.textContent = n.id;
-    gNode.appendChild(t); S.labels.push(t);
+    gNode.appendChild(t);
+    S.labels.push(t);
   }
 
-  // 红点（车位置）
   S.dotEl = document.createElementNS(NS, 'circle');
-  S.dotEl.setAttribute('fill', '#f85149'); S.dotEl.setAttribute('stroke', '#fff');
+  S.dotEl.setAttribute('fill', '#f85149');
+  S.dotEl.setAttribute('stroke', '#fff');
   S.dotEl.setAttribute('stroke-width', 1.2);
-  S.dotEl.setAttribute('vector-effect','non-scaling-stroke');
+  S.dotEl.setAttribute('vector-effect', 'non-scaling-stroke');
   S.dotEl.style.display = 'none';
   gCar.appendChild(S.dotEl);
 
   svg.addEventListener('click', () => clearSelection());
 
-  // 标记/文字按像素定尺寸；容器尺寸变化时重算
   if (S.ro) S.ro.disconnect();
   S.ro = new ResizeObserver(() => applyScreenScale());
   S.ro.observe($('mapWrap'));
-  applyScreenScale();
+  requestAnimationFrame(applyScreenScale);
 }
 
-function showTip(ev, road){
-  const v = road.logs ? road.logs[S.frame] : null;
+function positionLines(){
+  if (!S.viewBox) return;
+  const s = S.scale > 0 ? S.scale : 1;
+  for (const item of S.lineItems){
+    const r = item.road;
+    const A = S.nodeById.get(r.a);
+    const B = S.nodeById.get(r.b);
+    if (!A || !B){ item.el.style.display = 'none'; continue; }
+    item.el.style.display = '';
+
+    let x1 = A.x, y1 = A.y, x2 = B.x, y2 = B.y;
+    if (item.dir && !item.dir.legacy){
+      /* Use the arc's own orientation, not the physical road's ptA->ptB:
+         the reverse direction must offset to the opposite side. */
+      const from = S.nodeById.get(item.dir.from);
+      const to = S.nodeById.get(item.dir.to);
+      if (!from || !to) { item.el.style.display = 'none'; continue; }
+      x1 = from.x; y1 = from.y; x2 = to.x; y2 = to.y;
+      const dx = to.x - from.x, dy = to.y - from.y;
+      const len = Math.hypot(dx, dy) || 1;
+      /* Right-hand side of the travel direction, in map coordinates. */
+      const nx = dy / len, ny = -dx / len;
+      const off = lineOffsetPx(r) / s;
+      x1 += nx * off; y1 += ny * off;
+      x2 += nx * off; y2 += ny * off;
+    }
+    item.el.setAttribute('x1', x1);
+    item.el.setAttribute('y1', S.flipY - y1);
+    item.el.setAttribute('x2', x2);
+    item.el.setAttribute('y2', S.flipY - y2);
+  }
+}
+
+function showTip(ev, road, dir){
+  const v = dir ? valueFor(dir, S.frame) : null;
+  const data = dir && dir.data;
+  const dirText = dir
+    ? (dir.legacy ? '<br>旧报告：无方向' : '<br>方向 ' + dir.from + ' → ' + dir.to)
+    : '<br>无拥堵数据';
+  let extra = '';
+  if (data){
+    const parts = [];
+    if (data.cars !== undefined) parts.push('末帧车 ' + data.cars);
+    if (data.lanes !== undefined) parts.push('车道 ' + data.lanes);
+    if (data.los !== undefined) parts.push('末帧 LOS ' + data.los);
+    if (parts.length) extra = '<br>' + parts.join(' · ');
+  }
   const tip = $('tip');
-  tip.innerHTML = '道路 ' + road.a + ' ↔ ' + road.b +
+  tip.innerHTML = '道路 ' + road.a + ' ↔ ' + road.b + dirText +
     '<br>长度 ' + fmt(road.length, 1) + ' · 车道 ' + (road.lanes || '—') +
-    '<br>第 ' + S.frame + ' 帧拥堵 ' + fmt(v, 3);
+    '<br>第 ' + S.frame + ' 帧拥堵 ' + fmt(v, 3) + extra;
   const wrap = $('mapWrap').getBoundingClientRect();
   tip.style.left = (ev.clientX - wrap.left + 12) + 'px';
   tip.style.top  = (ev.clientY - wrap.top  + 12) + 'px';
@@ -384,35 +605,14 @@ function showTip(ev, road){
 }
 function hideTip(){ $('tip').style.opacity = 0; }
 
-/* 线宽表示车道数，与原 matplotlib 代码一致（原式 capacity/length*2 = lanes×2） */
-const LANE_PX = 2;
-const MAX_LANES = 5;                                  // 与 attributes.py 的 Config_road_generator.max_lanes 一致
-const NODE_R_PX = (LANE_PX * MAX_LANES + 4) / 2;      // 节点半径 = (理论最宽路 + 4px)/2 = 7px
-const CAR_R_PX  = NODE_R_PX * 0.8;                    // 车红点比节点略小
-const LABEL_DY_PX = NODE_R_PX + 3;                    // 节点编号浮在节点上方
-function roadWidthPx(r){ return r.lanes ? r.lanes * LANE_PX : 2.2; }
-
-/* 选中道路改用「外圈光晕」表示，不再占用线宽这个通道 */
-function updateHalo(){
-  const r = S.selRoad, halo = S.haloEl;
-  if (!halo) return;
-  if (!r){ halo.style.display = 'none'; return; }
-  const A = S.nodeById.get(r.a), B = S.nodeById.get(r.b);
-  if (!A || !B){ halo.style.display = 'none'; return; }
-  halo.setAttribute('x1', A.x); halo.setAttribute('y1', S.flipY - A.y);
-  halo.setAttribute('x2', B.x); halo.setAttribute('y2', S.flipY - B.y);
-  halo.setAttribute('stroke-width', roadWidthPx(r) + 7);
-  halo.style.display = '';
-}
-
-/* SVG 的 font-size / r 是用户单位，会随 viewBox 缩放，必须按当前比例折成像素 */
 function applyScreenScale(){
   const svg = $('map');
-  if (!S.viewBox || !S.labels || !S.labels.length) return;
+  if (!S.viewBox || !S.labels.length) return;
   const rect = svg.getBoundingClientRect();
   if (!rect.width || !rect.height) return;
-  const s = Math.min(rect.width / S.viewBox[2], rect.height / S.viewBox[3]);   // 每用户单位 = s 像素
+  const s = Math.min(rect.width / S.viewBox[2], rect.height / S.viewBox[3]);
   if (!s) return;
+  S.scale = s;
   const u = 1 / s;
   for (const t of S.labels){
     t.setAttribute('font-size', (10 * u).toFixed(4));
@@ -420,79 +620,134 @@ function applyScreenScale(){
   }
   for (const c of S.nodeCircles) c.setAttribute('r', (NODE_R_PX * u).toFixed(4));
   if (S.dotEl) S.dotEl.setAttribute('r', (CAR_R_PX * u).toFixed(4));
+  positionLines();
   updateHalo();
+  if (S.selCar) paintCar();
 }
 
-/* 只更新颜色（拖动时间轴时最频繁的路径） */
+function updateHalo(){
+  const item = S.selDir
+    ? S.lineItems.find(i => i.dir === S.selDir)
+    : null;
+  if (!item || !S.haloEl){ if (S.haloEl) S.haloEl.style.display = 'none'; return; }
+  S.haloEl.setAttribute('x1', item.el.getAttribute('x1'));
+  S.haloEl.setAttribute('y1', item.el.getAttribute('y1'));
+  S.haloEl.setAttribute('x2', item.el.getAttribute('x2'));
+  S.haloEl.setAttribute('y2', item.el.getAttribute('y2'));
+  S.haloEl.setAttribute('stroke-width', roadWidthPx(item.road) + 4);
+  S.haloEl.style.display = '';
+}
+
 function paintRoads(){
-  for (let i = 0; i < S.roads.length; i++){
-    const el = S.roadEls[i]; if (!el) continue;
-    const r = S.roads[i];
-    const v = r.logs ? r.logs[S.frame] : null;
-    el.setAttribute('stroke', congestionColor(v));
-    el.setAttribute('stroke-width', roadWidthPx(r));      // 线宽恒定表示车道数
-    el.setAttribute('stroke-opacity', (S.selCar && S.selRoad !== r) ? 0.25 : 1);
+  for (const item of S.lineItems){
+    const v = item.dir ? valueFor(item.dir, S.frame) : null;
+    const color = item.dir ? congestionColor(v) : '#8b98a5';
+    item.el.setAttribute('stroke', color);
+    item.el.setAttribute('stroke-width', roadWidthPx(item.road));
+    item.el.setAttribute('stroke-opacity',
+      (S.selCar && item.road !== S.selRoad) ? 0.2 : 1);
   }
   updateHalo();
 }
 
+function findRoadFor(from, to){
+  const road = S.roadByDir.get(dirKey(from, to));
+  if (road) return road;
+  return S.roads.find(r => (r.a === from && r.b === to) ||
+                           (r.a === to && r.b === from)) || null;
+}
+
+function carStateAt(car, T){
+  if (T < car.spawn) return null;
+  if (car.arrived && T >= car.arriveFrame) return {arrived:true};
+  const route = car.route;
+  if (route.length < 2) return {arrived:true};
+
+  let current = null;
+  let nextFrame = car.arrived ? car.arriveFrame : S.frames - 1;
+  for (const ev of car.events){
+    if (ev.type === 'enter' && ev.frame <= T) current = ev;
+    if (ev.frame > T && (ev.type === 'enter' || ev.type === 'arrive')){
+      nextFrame = ev.frame;
+      break;
+    }
+  }
+  let from, to, startFrame;
+  if (current){
+    from = current.from; to = current.to; startFrame = current.frame;
+  } else {
+    from = route[0]; to = route[1]; startFrame = car.spawn;
+  }
+  const span = Math.max(1, nextFrame - startFrame);
+  const t = Math.max(0, Math.min(1, (T - startFrame) / span));
+  return {arrived:false, from, to, t};
+}
+
 function paintCar(){
-  if (!S.selCar){ S.carPathEl.style.display = 'none'; S.dotEl.style.display = 'none'; return; }
+  if (!S.selCar){
+    S.carPathEl.style.display = 'none';
+    S.dotEl.style.display = 'none';
+    return;
+  }
   const car = S.selCar;
-  // 整体路线
-  const pts = car.route.map(id => { const n = S.nodeById.get(id); return n ? (n.x + ',' + (S.flipY - n.y)) : null; })
-                      .filter(Boolean).join(' ');
+  const pts = car.route.map(id => {
+    const n = S.nodeById.get(id);
+    return n ? (n.x + ',' + (S.flipY - n.y)) : null;
+  }).filter(Boolean).join(' ');
   S.carPathEl.setAttribute('points', pts);
-  S.carPathEl.style.display = '';
-  // 红点：当前所在道路的中点（到达后放在终点）
+  S.carPathEl.style.display = pts ? '' : 'none';
+
   const st = carStateAt(car, S.frame);
   if (!st){ S.dotEl.style.display = 'none'; return; }
   S.dotEl.style.display = '';
   if (st.arrived){
     const n = S.nodeById.get(car.goal);
-    if (n){ S.dotEl.setAttribute('cx', n.x); S.dotEl.setAttribute('cy', S.flipY - n.y); }
-  } else {
-    const A = S.nodeById.get(st.a), B = S.nodeById.get(st.b);
-    if (A && B){
-      S.dotEl.setAttribute('cx', (A.x + B.x) / 2);
-      S.dotEl.setAttribute('cy', S.flipY - (A.y + B.y) / 2);
+    if (n){
+      S.dotEl.setAttribute('cx', n.x);
+      S.dotEl.setAttribute('cy', S.flipY - n.y);
     }
+    return;
   }
-}
+  const A = S.nodeById.get(st.from);
+  const B = S.nodeById.get(st.to);
+  if (!A || !B){ S.dotEl.style.display = 'none'; return; }
 
-/* 某车在第 T 帧的所在路段：
-   nums = [进入路段1, 进入路段2, …]（若已到达，最后一项是到达帧） */
-function carStateAt(car, T){
-  if (T < car.spawn) return null;
-  if (car.arrived && T >= car.arrive) return { arrived:true };
-  if (!car.arrived && T > car.last) return null;       // 记录已截止
-  const R = car.route.length - 1;
-  if (R <= 0) return { arrived:true };
-  let k = 0;
-  while (k < car.nums.length && car.nums[k] <= T) k++;
-  const idx = Math.min(k, R - 1);
-  return { arrived:false, idx, a:car.route[idx], b:car.route[idx + 1] };
+  let x = A.x + st.t * (B.x - A.x);
+  let y = A.y + st.t * (B.y - A.y);
+  const dx = B.x - A.x, dy = B.y - A.y;
+  const len = Math.hypot(dx, dy) || 1;
+  const road = findRoadFor(st.from, st.to);
+  const off = lineOffsetPx(road || {lanes:1}) / (S.scale || 1);
+  x += (dy / len) * off;
+  y += (-dx / len) * off;
+  S.dotEl.setAttribute('cx', x);
+  S.dotEl.setAttribute('cy', S.flipY - y);
 }
 
 /* ------------------------------------------------------------------ *
- *  时间轴
+ *  Timeline
  * ------------------------------------------------------------------ */
 function setRange(min, max){
   S.rangeMin = min; S.rangeMax = max;
-  const sl = $('frames');
-  sl.min = min; sl.max = max; sl.value = Math.min(Math.max(S.frame, min), max);
+  const slider = $('frames');
+  slider.min = min; slider.max = max;
+  slider.value = Math.min(Math.max(S.frame, min), max);
   $('frameInput').min = min; $('frameInput').max = max;
   $('frameRange').textContent = '/ ' + max + '（范围 ' + min + '–' + max + '）';
 }
+
 function setFrame(f){
   f = Math.round(f);
-  if (!S.frames) f = 0; else f = Math.min(S.rangeMax, Math.max(S.rangeMin, f));
+  if (!S.frames) f = 0;
+  else f = Math.min(S.rangeMax, Math.max(S.rangeMin, f));
   S.frame = f;
   $('frames').value = f;
   $('frameInput').value = f;
-  paintRoads(); paintCar(); updateFrameStats();
-  if (S.selRoad) renderSide();               // 右侧的“当前帧拥堵”跟着变
-  else if (S.selCar) renderSide();
+  paintRoads();
+  paintCar();
+  updateFrameStats();
+  if (S.selRoad || S.selCar) renderSide();
+  updateAnalysisCursor();
 }
 $('frames').oninput = e => setFrame(+e.target.value);
 $('frameInput').oninput = e => setFrame(+e.target.value || 0);
@@ -502,60 +757,864 @@ document.addEventListener('keydown', e => {
   if (e.key === 'ArrowLeft'){ setFrame(S.frame - 1); e.preventDefault(); }
 });
 $('showIds').onchange = e => {
-  document.querySelectorAll('.nodeLabel').forEach(t => t.style.display = e.target.checked ? '' : 'none');
+  document.querySelectorAll('.nodeLabel').forEach(t =>
+    t.style.display = e.target.checked ? '' : 'none');
 };
 
 function updateFrameStats(){
   if (!S.frames){ $('frameStats').textContent = ''; return; }
-  let sum = 0, mx = -1, cnt = 0, withCars = 0;
-  for (const r of S.roads){
-    if (!r.logs) continue;
-    const v = r.logs[S.frame];
-    if (v === undefined) continue;
-    sum += v; cnt++; if (v > mx) mx = v; if (v > 0.05) withCars++;
+  let sum = 0, max = -1, count = 0, busy = 0;
+  for (const road of S.roads){
+    for (const dir of road.dirs){
+      const v = valueFor(dir, S.frame);
+      if (v === null || v === undefined) continue;
+      sum += v; count++;
+      if (v > max) max = v;
+      if (v > 0.05) busy++;
+    }
   }
   let active = 0;
   for (const c of S.cars){
     if (S.frame < c.spawn) continue;
-    if (c.arrived ? (S.frame >= c.arrive) : (S.frame > c.last)) continue;
+    if (c.arrived && S.frame >= c.arriveFrame) continue;
     active++;
   }
+  const edgeLabel = S.legacy ? '道路均拥堵' : '有向边均拥堵';
+  const busyLabel = S.legacy ? '拥堵路段(>0.05)' : '拥堵方向(>0.05)';
   $('frameStats').innerHTML =
     '当前帧 <b>' + S.frame + '</b>' +
-    ' · 边均拥堵 <b>' + fmt(cnt ? sum/cnt : null, 3) + '</b>' +
-    ' · 最大 <b>' + fmt(mx >= 0 ? mx : null, 3) + '</b>' +
-    ' · 拥堵路段(>0.05) <b>' + withCars + '/' + cnt + '</b>' +
-    ' · 在途车 <b>' + active.toLocaleString() + '</b>';
+    ' · ' + edgeLabel + ' <b>' + fmt(count ? sum / count : null, 3) + '</b>' +
+    ' · 最大 <b>' + fmt(max >= 0 ? max : null, 3) + '</b>' +
+    ' · ' + busyLabel + ' <b>' + busy + '/' + count + '</b>' +
+    ' · 在途车 <b>' + active.toLocaleString() + '</b>' +
+    ' · 采样间隔 <b>' + S.logEvery + '</b> 帧';
 }
 
 /* ------------------------------------------------------------------ *
- *  右侧面板
+ *  Bottom analysis drawer
  * ------------------------------------------------------------------ */
-function selectRoad(road){
-  S.selRoad = road; S.selCar = null;
+function windowHours(){
+  return S.fps > 0 ? (S.winEnd - S.winStart + 1) / S.fps : null;
+}
+
+function setAnalysisMsg(msg){
+  const el = $('analysisMsg');
+  if (el) el.textContent = msg || '';
+}
+
+function setHoverText(msg){
+  const el = $('hoverReadout');
+  if (el) el.textContent = msg || '鼠标悬停图表可读数；点击曲线跳到该帧';
+}
+
+function syncAnalysisWindowInputs(){
+  const a = $('winStart'), b = $('winEnd');
+  if (!a || !b) return;
+  const last = Math.max(0, S.frames - 1);
+  a.max = last; b.max = last;
+  a.value = S.winStart; b.value = S.winEnd;
+  updateWindowInfo();
+}
+
+function updateWindowInfo(){
+  const el = $('winInfo');
+  if (!el) return;
+  const h = windowHours();
+  el.textContent = `${S.winStart.toLocaleString()} – ${S.winEnd.toLocaleString()}` +
+    (h === null ? '' : ` · ${h.toFixed(2)} h`);
+}
+
+function getActivityCache(){
+  if (S.activityCache) return S.activityCache;
+  const n = Math.max(1, S.frames);
+  const delta = new Int32Array(n + 1);
+  const arrivalsDelta = new Int32Array(n + 1);
+  for (const c of S.cars){
+    const sp = Math.max(0, Math.min(n - 1, Math.round(c.spawn || 0)));
+    delta[sp]++;
+    if (c.arrived && c.arriveFrame !== null && c.arriveFrame !== undefined){
+      const af = Math.max(0, Math.min(n - 1, Math.round(c.arriveFrame)));
+      delta[af]--;
+      arrivalsDelta[af]++;
+    }
+  }
+  const active = new Int32Array(n);
+  const arrivals = new Int32Array(n);
+  let cur = 0, cum = 0;
+  for (let i = 0; i < n; i++){
+    cur += delta[i];
+    cum += arrivalsDelta[i];
+    active[i] = Math.max(0, cur);
+    arrivals[i] = cum;
+  }
+  S.activityCache = {active, arrivals};
+  return S.activityCache;
+}
+
+function getWindowCongestionStats(){
+  if (!S.frames) return null;
+  const startIdx = Math.max(0, Math.ceil(S.winStart / S.logEvery));
+  const endIdx = Math.floor(S.winEnd / S.logEvery);
+  const hist = new Int32Array(100);
+  let sum = 0, count = 0, max = -Infinity, busy = 0;
+  for (const road of S.roads){
+    for (const dir of road.dirs){
+      const logs = dir.data && dir.data.congestion_logs;
+      if (!logs || !logs.length) continue;
+      const stop = Math.min(endIdx, logs.length - 1);
+      for (let i = startIdx; i <= stop; i++){
+        const v = Number(logs[i]);
+        if (!Number.isFinite(v)) continue;
+        sum += v; count++;
+        if (v > max) max = v;
+        if (v > 0.05) busy++;
+        hist[Math.max(0, Math.min(99, Math.floor(Math.max(0, Math.min(1, v)) * 100)))]++;
+      }
+    }
+  }
+  if (!count) return null;
+  let acc = 0, p95 = null;
+  const target = count * 0.95;
+  for (let i = 0; i < hist.length; i++){
+    acc += hist[i];
+    if (acc >= target){ p95 = (i + 0.5) / 100; break; }
+  }
+  return {mean:sum / count, max, p95, busy:busy / count, n:count};
+}
+
+function getNetworkSeries(){
+  const dirs = [];
+  for (const road of S.roads){
+    for (const dir of road.dirs){
+      const logs = dir.data && dir.data.congestion_logs;
+      if (logs && logs.length) dirs.push({dir, logs});
+    }
+  }
+  const sampleStart = Math.max(0, Math.ceil(S.winStart / S.logEvery));
+  let sampleEnd = Math.floor(S.winEnd / S.logEvery);
+  if (!dirs.length){
+    sampleEnd = Math.min(sampleEnd, Math.ceil(S.frames / S.logEvery) - 1);
+  }
+  if (sampleEnd < sampleStart) return {frames:[], mean:[], max:[], active:[], arrivals:[]};
+
+  const count = sampleEnd - sampleStart + 1;
+  const stride = Math.max(1, Math.ceil(count / 2000));
+  const act = getActivityCache();
+  const out = {frames:[], mean:[], max:[], active:[], arrivals:[]};
+
+  const pushAt = (k) => {
+    let sum = 0, n = 0, mx = -Infinity;
+    for (const d of dirs){
+      if (k >= d.logs.length) continue;
+      const v = Number(d.logs[k]);
+      if (!Number.isFinite(v)) continue;
+      sum += v; n++;
+      if (v > mx) mx = v;
+    }
+    const frame = Math.max(S.winStart, Math.min(S.winEnd, k * S.logEvery));
+    const ai = Math.max(0, Math.min(act.active.length - 1, frame));
+    out.frames.push(frame);
+    out.mean.push(n ? sum / n : null);
+    out.max.push(n ? mx : null);
+    out.active.push(act.active[ai]);
+    out.arrivals.push(act.arrivals[ai]);
+  };
+
+  for (let k = sampleStart; k <= sampleEnd; k += stride) pushAt(k);
+  if (out.frames.length && out.frames[out.frames.length - 1] < S.winEnd){
+    pushAt(Math.min(sampleEnd, Math.floor(S.winEnd / S.logEvery)));
+  }
+  return out;
+}
+
+function getWindowCars(){
+  return S.cars.filter(c => c.arrived && c.arriveFrame !== null &&
+    c.arriveFrame >= S.winStart && c.arriveFrame <= S.winEnd);
+}
+
+function carTripHours(c){
+  const t = Number(c.time_cost);
+  if (Number.isFinite(t) && t > 0) return t;
+  if (S.fps > 0 && c.arriveFrame !== null) return (c.arriveFrame - c.spawn) / S.fps;
+  return null;
+}
+
+function carAvgSpeed(c){
+  const t = carTripHours(c);
+  const d = Number(c.total_distance);
+  return Number.isFinite(t) && t > 0 && Number.isFinite(d) ? d / t : null;
+}
+
+function percentile(values, p){
+  if (!values.length) return null;
+  const a = values.slice().sort((x, y) => x - y);
+  const idx = Math.max(0, Math.min(a.length - 1, Math.floor((a.length - 1) * p)));
+  return a[idx];
+}
+
+function histogram(values, bins){
+  const a = values.filter(v => Number.isFinite(v));
+  if (!a.length) return null;
+  let min = Infinity, max = -Infinity;
+  for (const v of a){ if (v < min) min = v; if (v > max) max = v; }
+  if (max <= min){ max = min + 1; min = min - 0.5; }
+  const n = Math.max(2, bins || 12);
+  const width = (max - min) / n;
+  const counts = new Array(n).fill(0);
+  for (const v of a){
+    const i = Math.max(0, Math.min(n - 1, Math.floor((v - min) / width)));
+    counts[i]++;
+  }
+  const labels = counts.map((_, i) => {
+    const lo = min + i * width, hi = min + (i + 1) * width;
+    return `${fmt(lo,2)}–${fmt(hi,2)}`;
+  });
+  return {labels, counts, min, max, n:a.length, values:a};
+}
+
+function collectWindowCongestionValues(limit){
+  const slices = [];
+  let total = 0;
+  const startIdx = Math.max(0, Math.ceil(S.winStart / S.logEvery));
+  const endIdx = Math.floor(S.winEnd / S.logEvery);
+  for (const road of S.roads){
+    for (const dir of road.dirs){
+      const logs = dir.data && dir.data.congestion_logs;
+      if (!logs || !logs.length) continue;
+      const stop = Math.min(endIdx, logs.length - 1);
+      if (stop >= startIdx){ slices.push([logs, startIdx, stop]); total += stop - startIdx + 1; }
+    }
+  }
+  const stride = Math.max(1, Math.ceil(total / Math.max(1, limit || 200000)));
+  const out = [];
+  let seen = 0;
+  for (const [logs, a, b] of slices){
+    for (let i = a; i <= b; i++){
+      if (seen++ % stride === 0){
+        const v = Number(logs[i]);
+        if (Number.isFinite(v)) out.push(v);
+      }
+    }
+  }
+  return out;
+}
+
+function drawBrush(){
+  const c = $('brushCanvas');
+  if (!c) return;
+  const w = c.clientWidth || 600, h = c.clientHeight || 38;
+  const dpr = window.devicePixelRatio || 1;
+  c.width = Math.max(1, Math.round(w * dpr)); c.height = Math.max(1, Math.round(h * dpr));
+  const ctx = c.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = '#111820'; ctx.fillRect(0, 0, w, h);
+  if (!S.frames) return;
+  const xOf = f => S.frames <= 1 ? w / 2 : (f / (S.frames - 1)) * (w - 1);
+  const selA = S.brushDrag ? Math.min(S.brushDrag.a, S.brushDrag.b) : S.winStart;
+  const selB = S.brushDrag ? Math.max(S.brushDrag.a, S.brushDrag.b) : S.winEnd;
+  const xa = xOf(selA), xb = xOf(selB);
+  ctx.fillStyle = '#1f6feb44'; ctx.fillRect(xa, 5, Math.max(2, xb - xa), h - 10);
+  ctx.strokeStyle = '#58a6ff'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(xa, 4); ctx.lineTo(xa, h - 4); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(xb, 4); ctx.lineTo(xb, h - 4); ctx.stroke();
+  ctx.strokeStyle = '#2b3641';
+  ctx.beginPath(); ctx.moveTo(0, h / 2); ctx.lineTo(w, h / 2); ctx.stroke();
+  const cursor = S.frame;
+  ctx.strokeStyle = '#f85149'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(xOf(cursor), 2); ctx.lineTo(xOf(cursor), h - 2); ctx.stroke();
+  if (S.hoverFrame !== null && !S.brushDrag){
+    ctx.strokeStyle = '#d29922'; ctx.setLineDash([2,2]);
+    ctx.beginPath(); ctx.moveTo(xOf(S.hoverFrame), 2); ctx.lineTo(xOf(S.hoverFrame), h - 2); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+  ctx.fillStyle = '#8b98a5'; ctx.font = '10px sans-serif';
+  ctx.fillText('0', 2, h - 3);
+  const last = String(S.frames - 1);
+  ctx.fillText(last, w - ctx.measureText(last).width - 2, h - 3);
+}
+
+function brushFrameAt(ev){
+  const c = $('brushCanvas');
+  const rect = c.getBoundingClientRect();
+  const x = Math.max(0, Math.min(rect.width - 1, ev.clientX - rect.left));
+  return Math.round((x / Math.max(1, rect.width - 1)) * Math.max(0, S.frames - 1));
+}
+
+function setAnalysisWindow(a, b, render){
+  if (!S.frames) return;
+  let x = Math.round(Number(a)), y = Math.round(Number(b));
+  if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+  if (x > y){ const t = x; x = y; y = t; }
+  x = Math.max(0, Math.min(S.frames - 1, x));
+  y = Math.max(0, Math.min(S.frames - 1, y));
+  S.winStart = x; S.winEnd = y;
+  if (!S.selCar && (S.frame < x || S.frame > y)) setFrame(x);
+  syncAnalysisWindowInputs();
+  drawBrush();
+  if (render !== false){
+    renderAnalysis();
+    if (S.selRoad) drawRoadChart(S.selRoad);
+  }
+}
+
+function applyWindowInputs(){
+  const a = Number($('winStart').value), b = Number($('winEnd').value);
+  if (!Number.isFinite(a) || !Number.isFinite(b)){
+    setAnalysisMsg('窗口起止必须是数字');
+    return;
+  }
+  setAnalysisMsg('');
+  setAnalysisWindow(a, b, true);
+}
+
+function toggleAnalysis(){
+  const box = $('analysis');
+  if (box.classList.contains('hidden')) return;
+  S.analysisOpen = box.classList.contains('collapsed');
+  box.classList.toggle('collapsed', !S.analysisOpen);
+  $('btnAnalysisToggle').textContent = S.analysisOpen ? '收起分析' : '展开分析';
+  if (S.analysisOpen){
+    renderAnalysis();
+    requestAnimationFrame(() => { drawBrush(); applyScreenScale(); });
+  } else {
+    destroyAnalysisCharts();
+    requestAnimationFrame(applyScreenScale);
+  }
+}
+
+function setAnalysisTab(tab){
+  S.analysisTab = tab;
+  document.querySelectorAll('#analysisTabs button').forEach(b =>
+    b.classList.toggle('active', b.dataset.atab === tab));
+  const body = $('analysisBody');
+  if (body) body.scrollTop = 0;
+  renderAnalysis();
+}
+
+function destroyAnalysisCharts(){
+  for (const c of S.analysisCharts){
+    try { c.destroy(); } catch (e) {}
+  }
+  S.analysisCharts = [];
+}
+
+function cursorPlugin(){
+  return {
+    id: 'analysisCursor',
+    afterDatasetsDraw(chart){
+      const { ctx, chartArea, scales } = chart;
+      const draw = (x, color, dash) => {
+        if (!Number.isFinite(x) || x < chartArea.left || x > chartArea.right) return;
+        ctx.save(); ctx.strokeStyle = color; ctx.lineWidth = 1;
+        if (dash) ctx.setLineDash(dash);
+        ctx.beginPath(); ctx.moveTo(x, chartArea.top); ctx.lineTo(x, chartArea.bottom); ctx.stroke();
+        ctx.restore();
+      };
+      draw(scales.x.getPixelForValue(S.frame), '#f85149', null);
+      if (Number.isFinite(chart.$hoverX)) draw(chart.$hoverX, '#d29922', [3,3]);
+    }
+  };
+}
+
+function chartHover(evt, elements, chart){
+  if (!elements || !elements.length){
+    chart.$hoverX = null;
+    S.hoverFrame = null;
+    setHoverText('');
+    return;
+  }
+  const x = elements[0].element.x;
+  chart.$hoverX = x;
+  const frame = Math.round(chart.scales.x.getValueForPixel(x));
+  if (Number.isFinite(frame)){
+    S.hoverFrame = frame;
+    setHoverText(`悬停帧 ${frame} · 点击跳到该帧`);
+  }
+  drawBrush();
+}
+
+function chartClickFrame(evt, elements, chart){
+  if (!elements || !elements.length) return;
+  const frame = Math.round(chart.scales.x.getValueForPixel(elements[0].element.x));
+  if (Number.isFinite(frame)) setFrame(frame);
+}
+
+function lineOptions(opts){
+  opts = opts || {};
+  const o = {
+    responsive: true, maintainAspectRatio: false, animation: false, parsing: false,
+    interaction: { mode:'index', intersect:false },
+    scales: {
+      x: { type:'linear', min:S.winStart, max:Math.max(S.winStart + 1, S.winEnd),
+           ticks:{ color:'#8b98a5', maxTicksLimit:8, font:{size:10},
+                   callback:v => String(Math.round(v)) },
+           grid:{ color:'#2b3641' } },
+      y: { beginAtZero:true, min:opts.yMin, max:opts.yMax,
+           title: opts.yTitle ? { display:true, text:opts.yTitle, color:'#8b98a5', font:{size:10} } : undefined,
+           ticks:{ color:'#8b98a5', maxTicksLimit:6, font:{size:10} },
+           grid:{ color:'#2b3641' } }
+    },
+    plugins: {
+      legend:{ labels:{ color:'#8b98a5', font:{size:10}, boxWidth:12 } },
+      tooltip:{ callbacks:{
+        title: items => items.length ? '帧 ' + Math.round(items[0].parsed.x) : '',
+        label: ctx => ctx.dataset.label + ' · ' + Number(ctx.parsed.y).toFixed(4)
+      }}
+    },
+    onHover: chartHover,
+    onClick: chartClickFrame
+  };
+  if (opts.y1){
+    o.scales.y1 = {
+      position:'right', beginAtZero:true,
+      title:{ display:true, text:'累计到达', color:'#8b98a5', font:{size:10} },
+      ticks:{ color:'#8b98a5', maxTicksLimit:6, font:{size:10} },
+      grid:{ drawOnChartArea:false }
+    };
+  }
+  return o;
+}
+
+function makeLineChart(id, datasets, opts){
+  const canvas = $(id);
+  if (!canvas || !window.Chart) return null;
+  const chart = new Chart(canvas.getContext('2d'), {
+    type:'line', data:{datasets}, options:lineOptions(opts), plugins:[cursorPlugin()]
+  });
+  chart.$hoverX = null;
+  S.analysisCharts.push(chart);
+  return chart;
+}
+
+function makeBarChart(id, hist, color){
+  const canvas = $(id);
+  if (!canvas || !window.Chart || !hist) return null;
+  const chart = new Chart(canvas.getContext('2d'), {
+    type:'bar',
+    data:{ labels:hist.labels, datasets:[{ label:'车辆数', data:hist.counts,
+      backgroundColor:color + 'aa', borderColor:color, borderWidth:1 }] },
+    options:{
+      responsive:true, maintainAspectRatio:false, animation:false,
+      plugins:{ legend:{ display:false },
+        tooltip:{ callbacks:{ label: c => c.parsed.y + ' 辆' } } },
+      scales:{ x:{ ticks:{ color:'#8b98a5', maxTicksLimit:6, font:{size:9} }, grid:{ display:false } },
+               y:{ beginAtZero:true, ticks:{ color:'#8b98a5', maxTicksLimit:5, font:{size:9} }, grid:{ color:'#2b3641' } } },
+      onHover:(evt, els) => {
+        if (els && els.length) setHoverText(`${hist.labels[els[0].index]}：${hist.counts[els[0].index]} 辆`);
+        else setHoverText('');
+      }
+    }
+  });
+  S.analysisCharts.push(chart);
+  return chart;
+}
+
+function makeScatterChart(canvasId, points){
+  const canvas = $(canvasId);
+  if (!canvas || !window.Chart) return null;
+  const chart = new Chart(canvas.getContext('2d'), {
+    type:'scatter',
+    data:{ datasets:[{ label:'到达车辆', data:points,
+      backgroundColor:'#58a6ffaa', borderColor:'#58a6ff', pointRadius:2.5 }] },
+    options:{
+      responsive:true, maintainAspectRatio:false, animation:false,
+      plugins:{ legend:{ display:false },
+        tooltip:{ callbacks:{
+          label: c => {
+            const p = c.raw;
+            return `车 #${p.id} · ${p.start}→${p.goal} · ${Number(p.x).toFixed(3)} h · ${Number(p.y).toFixed(1)} km/h`;
+          }
+        } } },
+      scales:{
+        x:{ title:{ display:true, text:'行程时间 (h)', color:'#8b98a5', font:{size:10} },
+            ticks:{ color:'#8b98a5', font:{size:10} }, grid:{ color:'#2b3641' } },
+        y:{ title:{ display:true, text:'平均速度 (km/h)', color:'#8b98a5', font:{size:10} },
+            ticks:{ color:'#8b98a5', font:{size:10} }, grid:{ color:'#2b3641' } }
+      },
+      onHover:(evt, els) => {
+        if (els && els.length){
+          const p = (els[0].element.$context && els[0].element.$context.raw) || points[els[0].index];
+          if (p) setHoverText(`车 #${p.id} · ${Number(p.x).toFixed(3)} h · ${Number(p.y).toFixed(1)} km/h · 点击查看`);
+        } else setHoverText('');
+      },
+      onClick:(evt, els) => {
+        if (!els || !els.length) return;
+        const p = (els[0].element.$context && els[0].element.$context.raw) || points[els[0].index];
+        const car = p ? S.carById.get(p.id) : null;
+        if (car) selectCar(car);
+      }
+    }
+  });
+  S.analysisCharts.push(chart);
+  return chart;
+}
+
+function statCard(k, v, sub){
+  return `<div class="aStat"><span class="k">${k}</span><span class="v">${v}</span>` +
+    (sub ? `<span class="sub">${sub}</span>` : '') + '</div>';
+}
+
+function renderAnalysisStats(){
+  const box = $('analysisStats');
+  if (!box) return;
+  const cs = getWindowCongestionStats();
+  const act = getActivityCache();
+  const n = Math.max(1, S.frames);
+  const a = Math.max(0, Math.min(n - 1, S.winStart));
+  const b = Math.max(0, Math.min(n - 1, S.winEnd));
+  let peak = 0;
+  for (let i = a; i <= b; i++) peak = Math.max(peak, act.active[i]);
+  const before = a > 0 ? act.arrivals[a - 1] : 0;
+  const arrivals = act.arrivals[b] - before;
+  const hours = windowHours();
+  const cars = getWindowCars();
+  const trips = cars.map(carTripHours).filter(Number.isFinite);
+  const speeds = cars.map(carAvgSpeed).filter(Number.isFinite);
+  const avgTrip = trips.length ? trips.reduce((x,y) => x+y, 0) / trips.length : null;
+  const avgSpeed = speeds.length ? speeds.reduce((x,y) => x+y, 0) / speeds.length : null;
+  const throughput = hours ? arrivals / hours : null;
+  box.innerHTML = [
+    statCard('分析窗口', `${S.winStart.toLocaleString()} – ${S.winEnd.toLocaleString()}`,
+      hours === null ? '' : hours.toFixed(2) + ' h'),
+    statCard('拥堵均值 / P95', cs ? fmt(cs.mean, 4) + ' / ' + fmt(cs.p95, 3) : '—',
+      cs ? '峰值 ' + fmt(cs.max, 3) + ' · 拥堵占比 ' + (cs.busy * 100).toFixed(1) + '%' : '无 congestion 数据'),
+    statCard('在途车 起始 / 峰 / 结束', `${act.active[a].toLocaleString()} / ${peak.toLocaleString()} / ${act.active[b].toLocaleString()}`,
+      '按车辆 spawn/arrive 事件计算'),
+    statCard('窗口到达 / 吞吐', `${arrivals.toLocaleString()} 辆`,
+      throughput === null ? '—' : '≈ ' + Math.round(throughput).toLocaleString() + ' 辆/h'),
+    statCard('到达车均速 / 均行程', avgSpeed === null ? '—' : fmt(avgSpeed, 1) + ' km/h',
+      avgTrip === null ? '无到达车辆' : fmt(avgTrip, 3) + ' h / 辆')
+  ].join('');
+}
+
+function renderNetworkTab(pane){
+  const net = getNetworkSeries();
+  if (!window.Chart){
+    pane.innerHTML = '<div class="aNote">Chart.js 未加载：网络时序图不可用；右侧统计和 CSV 仍可使用。</div>';
+    return;
+  }
+  if (!net.frames.length){
+    pane.innerHTML = '<div class="aNote">当前报告没有可用的帧数据。</div>';
+    return;
+  }
+  pane.innerHTML = `
+    <div class="chartGrid">
+      <div class="chartCard"><h4>网络拥堵均值 / 峰值</h4><div class="chartBox"><canvas id="anNetCong"></canvas></div></div>
+      <div class="chartCard"><h4>在途车辆 / 累计到达</h4><div class="chartBox"><canvas id="anNetFlow"></canvas></div></div>
+    </div>
+    <div class="aNote">曲线按采样点绘制；悬停读数，点击跳到该帧。分析窗口外的数据不参与统计。</div>`;
+  const hasCong = net.mean.some(v => v !== null);
+  if (hasCong){
+    makeLineChart('anNetCong', [
+      { label:'网络均值', data:net.frames.map((f,i) => ({x:f, y:net.mean[i]})),
+        borderColor:'#58a6ff', backgroundColor:'#58a6ff22', borderWidth:1.8, pointRadius:0, spanGaps:true },
+      { label:'网络峰值', data:net.frames.map((f,i) => ({x:f, y:net.max[i]})),
+        borderColor:'#f0883e', borderWidth:1.2, pointRadius:0, spanGaps:true }
+    ], { yMin:0, yMax:1, yTitle:'拥堵度' });
+  } else {
+    const box = document.getElementById('anNetCong');
+    if (box) box.parentElement.innerHTML = '<div class="aNote">报告没有 congestion 时序（例如模板文件）。</div>';
+  }
+  makeLineChart('anNetFlow', [
+    { label:'在途车辆', data:net.frames.map((f,i) => ({x:f, y:net.active[i]})),
+      borderColor:'#3fb950', backgroundColor:'#3fb95022', borderWidth:1.8, pointRadius:0, fill:true },
+    { label:'累计到达', yAxisID:'y1', data:net.frames.map((f,i) => ({x:f, y:net.arrivals[i]})),
+      borderColor:'#a371f7', borderWidth:1.4, pointRadius:0 }
+  ], { y1:true, yTitle:'在途车辆' });
+}
+
+function renderDistTab(pane){
+  if (!window.Chart){
+    pane.innerHTML = '<div class="aNote">Chart.js 未加载：分布图不可用；CSV 仍可使用。</div>';
+    return;
+  }
+  const cars = getWindowCars();
+  const trips = cars.map(carTripHours).filter(Number.isFinite);
+  const speeds = cars.map(carAvgSpeed).filter(Number.isFinite);
+  const distances = cars.map(c => Number(c.total_distance)).filter(Number.isFinite);
+  const congs = collectWindowCongestionValues(200000);
+  const hTrip = histogram(trips, 12), hSpeed = histogram(speeds, 12),
+        hDist = histogram(distances, 12), hCong = histogram(congs, 12);
+  const card = (id, title, hist, color) => `
+    <div class="chartCard"><h4>${title}</h4>
+      ${hist ? `<div class="chartBox"><canvas id="${id}"></canvas></div>` :
+        '<div class="aNote">当前窗口没有数据。</div>'}
+    </div>`;
+  pane.innerHTML = `<div class="chartGrid">
+    ${card('anHistTrip', '行程时间分布 (h)', hTrip, '#58a6ff')}
+    ${card('anHistSpeed', '平均速度分布 (km/h)', hSpeed, '#3fb950')}
+    ${card('anHistDist', '总距离分布 (km)', hDist, '#f0883e')}
+    ${card('anHistCong', '拥堵值分布', hCong, '#a371f7')}
+  </div><div class="aNote">共 4 张图，向下滚动查看；行程统计只包含分析窗口内到达的车辆，拥堵分布取窗口内所有方向采样。</div>`;
+  if (hTrip) makeBarChart('anHistTrip', hTrip, '#58a6ff');
+  if (hSpeed) makeBarChart('anHistSpeed', hSpeed, '#3fb950');
+  if (hDist) makeBarChart('anHistDist', hDist, '#f0883e');
+  if (hCong) makeBarChart('anHistCong', hCong, '#a371f7');
+}
+
+function getWindowRoadRows(){
+  const startIdx = Math.max(0, Math.ceil(S.winStart / S.logEvery));
+  const endIdx = Math.floor(S.winEnd / S.logEvery);
+  const rows = [];
+  for (const road of S.roads){
+    for (const dir of road.dirs){
+      const logs = dir.data && dir.data.congestion_logs;
+      if (!logs || !logs.length) continue;
+      const stop = Math.min(endIdx, logs.length - 1);
+      if (stop < startIdx) continue;
+      const vals = [];
+      let sum = 0, max = -Infinity, busy = 0;
+      for (let i = startIdx; i <= stop; i++){
+        const v = Number(logs[i]);
+        if (!Number.isFinite(v)) continue;
+        vals.push(v); sum += v;
+        if (v > max) max = v;
+        if (v > 0.05) busy++;
+      }
+      if (!vals.length) continue;
+      rows.push({
+        road, dir, vals, mean:sum / vals.length, max,
+        p95:percentile(vals, 0.95), busy:busy / vals.length
+      });
+    }
+  }
+  rows.sort((a,b) => b.mean - a.mean);
+  return rows;
+}
+
+function renderRoadsTab(pane){
+  const rows = getWindowRoadRows();
+  if (!rows.length){
+    pane.innerHTML = '<div class="aNote">当前窗口没有方向级 congestion 数据。</div>';
+    return;
+  }
+  const body = rows.map(r => `<tr class="clickable" data-aroad="${r.road.i}">
+    <td>${r.road.a} ↔ ${r.road.b}</td>
+    <td>${dirLabel(r.dir)}</td>
+    <td>${r.road.lanes !== undefined ? r.road.lanes : '—'}</td>
+    <td>${fmt(r.mean, 4)}</td>
+    <td>${fmt(r.p95, 3)}</td>
+    <td>${fmt(r.max, 3)}</td>
+    <td>${(r.busy * 100).toFixed(1)}%</td>
+  </tr>`).join('');
+  pane.innerHTML = `<div class="aTable"><table>
+    <thead><tr><th>道路</th><th>方向</th><th>车道</th><th>均值</th><th>P95</th><th>峰值</th><th>拥堵占比</th></tr></thead>
+    <tbody>${body}</tbody></table></div>
+    <div class="aNote">按窗口内均值降序；点击行会在右侧打开道路详情。P95 为窗口内方向采样的 95% 分位。</div>`;
+  pane.querySelectorAll('tr[data-aroad]').forEach(tr =>
+    tr.onclick = () => selectRoad(S.roads[+tr.dataset.aroad], null));
+}
+
+function renderScatterTab(pane){
+  if (!window.Chart){
+    pane.innerHTML = '<div class="aNote">Chart.js 未加载：散点图不可用；CSV 仍可使用。</div>';
+    return;
+  }
+  const cars = getWindowCars();
+  const raw = [];
+  for (const c of cars){
+    const x = carTripHours(c), y = carAvgSpeed(c);
+    if (Number.isFinite(x) && Number.isFinite(y)){
+      raw.push({x, y, id:c.id, start:c.start, goal:c.goal});
+    }
+  }
+  if (!raw.length){
+    pane.innerHTML = '<div class="aNote">当前窗口没有到达车辆的完整行程数据。</div>';
+    return;
+  }
+  const step = Math.max(1, Math.ceil(raw.length / 5000));
+  const points = raw.filter((_, i) => i % step === 0);
+  pane.innerHTML = `<div class="chartGrid"><div class="chartCard wide">
+    <h4>到达车辆：行程时间 × 平均速度（${points.length.toLocaleString()} 点）</h4>
+    <div class="chartBox tall"><canvas id="anScatter"></canvas></div>
+  </div></div>
+  <div class="aNote">仅包含窗口内到达车辆；悬停查看车号/起终点，点击点跳到该车详情。</div>`;
+  makeScatterChart('anScatter', points);
+}
+
+function renderAnalysis(){
+  if (!S.frames || $('analysis').classList.contains('hidden')) return;
+  destroyAnalysisCharts();
+  setHoverText('');
+  S.hoverFrame = null;
+  const box = $('analysis');
+  syncAnalysisWindowInputs();
+  renderAnalysisStats();
+  if (box.classList.contains('collapsed')){ drawBrush(); return; }
+  const pane = $('analysisPane');
+  if (!pane) return;
+  if (S.analysisTab === 'network') renderNetworkTab(pane);
+  else if (S.analysisTab === 'dist') renderDistTab(pane);
+  else if (S.analysisTab === 'roads') renderRoadsTab(pane);
+  else renderScatterTab(pane);
+  drawBrush();
+}
+
+function updateAnalysisCursor(){
+  if ($('analysis').classList.contains('hidden')) return;
+  for (const c of S.analysisCharts){
+    try { c.update('none'); } catch (e) {}
+  }
+  drawBrush();
+}
+
+/* ------------------------------------------------------------------ *
+ *  Analysis CSV
+ * ------------------------------------------------------------------ */
+function csvEscape(v){
+  const s = v === null || v === undefined ? '' : String(v);
+  return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+
+function downloadText(name, text){
+  const blob = new Blob([text], {type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function exportAnalysisCSV(){
+  if (!S.frames){
+    setAnalysisMsg('还没有导入报告');
+    return;
+  }
+  const tab = S.analysisTab;
+  let header = [], rows = [], name = '';
+  if (tab === 'network'){
+    const net = getNetworkSeries();
+    header = ['frame','mean_congestion','max_congestion','active_cars','cumulative_arrivals'];
+    rows = net.frames.map((f,i) => [f, net.mean[i], net.max[i], net.active[i], net.arrivals[i]]);
+    name = 'analysis-network';
+  } else if (tab === 'dist' || tab === 'scatter'){
+    const cars = getWindowCars();
+    header = ['car_id','start','goal','spawn_frame','arrive_frame','trip_hours','avg_speed_kmh','total_distance_km','route_segments'];
+    rows = cars.map(c => [c.id, c.start, c.goal, c.spawn, c.arriveFrame,
+      carTripHours(c), carAvgSpeed(c), c.total_distance, c.roads]);
+    name = 'analysis-window-cars';
+  } else {
+    const rs = getWindowRoadRows();
+    header = ['road_a','road_b','direction_from','direction_to','lanes','road_length',
+      'mean_congestion','p95_congestion','max_congestion','busy_fraction'];
+    rows = rs.map(r => [r.road.a, r.road.b, r.dir.from, r.dir.to, r.road.lanes, r.road.length,
+      r.mean, r.p95, r.max, r.busy]);
+    name = 'analysis-window-roads';
+  }
+  if (!rows.length){
+    setAnalysisMsg('当前分析页没有可导出的行');
+    return;
+  }
+  const text = [header, ...rows].map(r => r.map(csvEscape).join(',')).join('\n');
+  downloadText(`${name}-${S.winStart}-${S.winEnd}.csv`, text);
+  setAnalysisMsg(`已导出 ${name}-${S.winStart}-${S.winEnd}.csv`);
+}
+
+/* ------------------------------------------------------------------ *
+ *  Analysis controls
+ * ------------------------------------------------------------------ */
+function initAnalysisControls(){
+  const toggle = $('btnAnalysisToggle');
+  if (toggle) toggle.onclick = toggleAnalysis;
+  document.querySelectorAll('#analysisTabs button').forEach(b =>
+    b.onclick = () => setAnalysisTab(b.dataset.atab));
+  const apply = $('btnWinApply');
+  if (apply) apply.onclick = applyWindowInputs;
+  ['winStart','winEnd'].forEach(id => {
+    const el = $(id);
+    if (el) el.addEventListener('keydown', e => { if (e.key === 'Enter') applyWindowInputs(); });
+  });
+  const all = $('btnWinAll');
+  if (all) all.onclick = () => setAnalysisWindow(0, S.frames - 1, true);
+  document.querySelectorAll('[data-winpreset]').forEach(b => {
+    b.onclick = () => {
+      const last = S.frames - 1;
+      if (b.dataset.winpreset === 'head') setAnalysisWindow(0, Math.round(last * 0.25), true);
+      else setAnalysisWindow(Math.round(last * 0.75), last, true);
+    };
+  });
+  const csv = $('btnCsv');
+  if (csv) csv.onclick = exportAnalysisCSV;
+
+  const c = $('brushCanvas');
+  if (c){
+    c.addEventListener('pointerdown', e => {
+      if (!S.frames) return;
+      e.preventDefault();
+      const f = brushFrameAt(e);
+      S.brushDrag = {a:f, b:f, moved:false};
+      try { c.setPointerCapture(e.pointerId); } catch (err) {}
+      drawBrush();
+    });
+    c.addEventListener('pointermove', e => {
+      if (!S.frames) return;
+      const f = brushFrameAt(e);
+      if (S.brushDrag){
+        S.brushDrag.b = f;
+        if (f !== S.brushDrag.a) S.brushDrag.moved = true;
+        drawBrush();
+      } else {
+        S.hoverFrame = f;
+        setHoverText('帧 ' + f + ' · 拖动选择分析窗口');
+        drawBrush();
+      }
+    });
+    c.addEventListener('pointerup', e => {
+      if (!S.brushDrag) return;
+      const drag = S.brushDrag;
+      S.brushDrag = null;
+      if (!drag.moved){
+        setFrame(drag.a);
+      } else {
+        setAnalysisWindow(Math.min(drag.a, drag.b), Math.max(drag.a, drag.b), true);
+      }
+      drawBrush();
+    });
+    c.addEventListener('pointercancel', () => { S.brushDrag = null; drawBrush(); });
+    c.addEventListener('pointerleave', () => {
+      if (!S.brushDrag){
+        S.hoverFrame = null;
+        setHoverText('');
+        drawBrush();
+      }
+    });
+  }
+  window.addEventListener('resize', () => drawBrush());
+}
+
+initAnalysisControls();
+
+/* ------------------------------------------------------------------ *
+ *  Side panel
+ * ------------------------------------------------------------------ */
+function selectRoad(road, dir){
+  S.selRoad = road;
+  S.selDir = dir || road.dirs[0] || null;
+  S.selCar = null;
   setRange(0, S.frames - 1);
-  paintRoads(); paintCar(); renderSide();
+  paintRoads();
+  paintCar();
+  renderSide();
 }
 function selectCar(car){
-  S.selCar = car; S.selRoad = null;
-  setRange(car.spawn, car.arrived ? car.arrive : car.last);   // 轴范围缩到这一段
-  paintRoads(); paintCar(); renderSide(); updateFrameStats();
+  S.selCar = car;
+  S.selRoad = null;
+  S.selDir = null;
+  const max = car.arrived ? car.arriveFrame : S.frames - 1;
+  setRange(car.spawn, Math.max(car.spawn, max));
+  setFrame(car.spawn);
 }
 function clearSelection(){
   if (!S.selRoad && !S.selCar) return;
-  S.selRoad = null; S.selCar = null;
+  S.selRoad = null; S.selDir = null; S.selCar = null;
   setRange(0, S.frames - 1);
   $('carInput').value = '';
-  paintRoads(); paintCar(); renderSide();
+  paintRoads();
+  paintCar();
+  renderSide();
 }
 $('btnClear').onclick = clearSelection;
-
-function roadStats(r){
-  if (!r.logs || !r.logs.length) return null;
-  let sum = 0, mx = -1, mn = Infinity, busy = 0;
-  for (const v of r.logs){ sum += v; if (v > mx) mx = v; if (v < mn) mn = v; if (v > 0.05) busy++; }
-  return { mean: sum / r.logs.length, max: mx, min: mn, busy: busy / r.logs.length };
-}
 
 function renderSide(){
   const side = $('side');
@@ -565,134 +1624,263 @@ function renderSide(){
 }
 
 function renderOverview(side){
-  let sumAll = 0, nAll = 0, mxAll = -1;
-  for (const r of S.roads){
-    if (!r.logs) continue;
-    for (const v of r.logs){ sumAll += v; nAll++; if (v > mxAll) mxAll = v; }
+  let sum = 0, count = 0, max = -1;
+  for (const road of S.roads){
+    for (const dir of road.dirs){
+      const logs = dir.data && dir.data.congestion_logs;
+      if (!logs) continue;
+      for (const v of logs){
+        sum += v; count++;
+        if (v > max) max = v;
+      }
+    }
   }
   const arrived = S.cars.filter(c => c.arrived).length;
   const avgSpeed = S.cars.length
-    ? S.cars.reduce((s,c) => s + (c.total_distance / c.time_cost || 0), 0) / S.cars.length : null;
+    ? S.cars.reduce((s,c) => s + (c.time_cost ? c.total_distance / c.time_cost : 0), 0)
+      / S.cars.length
+    : null;
+  const directedCount = S.roads.reduce((s,r) => s + r.dirs.length, 0);
+  const dirCount = S.roads.reduce((s,r) => s + (r.dirs.some(d => !d.legacy) ? 2 : 0), 0);
+
+  const rows = S.roads.map(road => {
+    const fwd = road.dirs.find(d => !d.legacy && d.from === road.a) || null;
+    const bwd = road.dirs.find(d => !d.legacy && d.from === road.b) || null;
+    const legacy = road.dirs.find(d => d.legacy) || null;
+    const sf = dirStats(fwd), sb = dirStats(bwd), sl = dirStats(legacy);
+    let cells = '';
+    if (S.legacy){
+      cells = '<td>' + (sl ? fmt(sl.mean,4) : '—') + '</td>' +
+              '<td>' + (sl ? fmt(sl.max,3) : '—') + '</td>';
+    } else {
+      cells = '<td>' + (sf ? fmt(sf.mean,4) : '—') + '</td>' +
+              '<td>' + (sb ? fmt(sb.mean,4) : '—') + '</td>' +
+              '<td>' + (sf ? fmt(sf.max,3) : '—') + '</td>' +
+              '<td>' + (sb ? fmt(sb.max,3) : '—') + '</td>';
+    }
+    return '<tr class="clickable" data-road="' + road.i + '">' +
+      '<td>' + road.a + ' ↔ ' + road.b + '</td>' +
+      '<td>' + fmt(road.length,1) + '</td>' +
+      '<td>' + (road.lanes !== undefined ? road.lanes : '—') + '</td>' +
+      cells + '</tr>';
+  }).join('');
+
+  const header = S.legacy
+    ? '<th>道路</th><th>长度</th><th>车道</th><th>均值</th><th>峰值</th>'
+    : '<th>道路</th><th>长度</th><th>车道</th><th>A→B 均值</th><th>B→A 均值</th><th>A→B 峰值</th><th>B→A 峰值</th>';
+
   side.innerHTML = `
     <h2>场景概览</h2>
     <div class="kv">
       <div class="k">文件</div><div class="v">${S.fileName || '—'}</div>
       <div class="k">节点 / 道路</div><div class="v">${S.nodes.length} / ${S.roads.length}</div>
+      <div class="k">有向方向 / 物理道路</div><div class="v">${S.legacy ? '—' : directedCount} / ${S.roads.length}</div>
       <div class="k">总帧数</div><div class="v">${S.frames.toLocaleString()}</div>
+      <div class="k">采样间隔</div><div class="v">${S.logEvery} 帧 / 点</div>
       <div class="k">车辆总数</div><div class="v">${S.cars.length.toLocaleString()}</div>
       <div class="k">已到达</div><div class="v">${arrived.toLocaleString()}（${S.cars.length ? (arrived/S.cars.length*100).toFixed(1) : '—'}%）</div>
-      <div class="k">全程时序均拥堵</div><div class="v">${fmt(nAll ? sumAll/nAll : null, 4)}</div>
-      <div class="k">全程峰值拥堵</div><div class="v">${fmt(mxAll >= 0 ? mxAll : null, 4)}</div>
-      <div class="k">车均速度(距离/时间)</div><div class="v">${fmt(avgSpeed, 3)} 单位/小时</div>
+      <div class="k">全程时序均拥堵</div><div class="v">${fmt(count ? sum/count : null, 4)}</div>
+      <div class="k">全程峰值拥堵</div><div class="v">${fmt(max >= 0 ? max : null, 4)}</div>
+      <div class="k">车均速度(距离/时间)</div><div class="v">${fmt(avgSpeed, 3)} km/h</div>
+      <div class="k">报告格式</div><div class="v">${S.legacy ? '旧版（无向）' : 'schema 2（双向）'}</div>
     </div>
     <h3>怎么用</h3>
     <div class="note">
-      · 拖动下方时间轴 / 输入帧号（或按 ← → 单帧微调）→ 左侧每条路变成该帧的拥堵颜色<br>
-      · 点击任意一条路 → 这里显示它的全部信息与拥堵曲线<br>
+      · 拖动下方时间轴 / 输入帧号（或按 ← → 单帧微调）→ 每条方向线显示该帧拥堵颜色<br>
+      · 点击任意一条方向线 → 这里显示这条路 A→B / B→A 两套统计与曲线<br>
+      · 点击空白处或点「清除」→ 回到全场景<br>
       · 输入车 ID 点「查询车」→ 轴范围缩到该车行程，图上标出整体路线与红点位置<br>
-      · 点击空白处 / 「清除」→ 回到全场景
+      · 底部「分析」面板：拖动窗口条或输入起止帧，查看网络时序、分布、道路窗口和行程散点；图表悬停读数，点击曲线跳到该帧<br>
+      · 双向道路按右行习惯：每个方向线在自己行进方向的右侧，颜色互不影响
     </div>
-    <h3>道路长度</h3>
+    <h3>道路列表</h3>
     <div class="scroll"><table>
-      <thead><tr><th>路段</th><th>长度</th><th>时序均拥堵</th><th>峰值</th></tr></thead>
-      <tbody>${S.roads.map(r => {
-        const st = roadStats(r);
-        return `<tr class="clickable" data-road="${r.i}"><td>${r.a} ↔ ${r.b}</td>
-          <td>${fmt(r.length,1)}</td><td>${st ? fmt(st.mean,4) : '—'}</td><td>${st ? fmt(st.max,3) : '—'}</td></tr>`;
-      }).join('')}</tbody>
+      <thead><tr>${header}</tr></thead>
+      <tbody>${rows}</tbody>
     </table></div>`;
+
   side.querySelectorAll('tr[data-road]').forEach(tr =>
-    tr.onclick = () => selectRoad(S.roads[+tr.dataset.road]));
+    tr.onclick = () => selectRoad(S.roads[+tr.dataset.road], null));
 }
 
-function renderRoad(side, r){
-  const st = roadStats(r);
-  const cur = r.logs ? r.logs[S.frame] : null;
+function dirLabel(dir){
+  return dir.legacy ? '旧报告（无方向）' : (dir.from + ' → ' + dir.to);
+}
+
+function renderRoad(side, road){
+  if (!road.dirs.length){
+    side.innerHTML = `<h2>道路 ${road.a} ↔ ${road.b}</h2>
+      <div class="note">这份报告没有这条路的 congestion 数据。</div>
+      <button id="btnBack">返回概览</button>`;
+    $('btnBack').onclick = clearSelection;
+    return;
+  }
+  if (!S.selDir) S.selDir = road.dirs[0];
+
+  const blocks = road.dirs.map(dir => {
+    const st = dirStats(dir);
+    const cur = valueFor(dir, S.frame);
+    const color = congestionColor(cur);
+    const data = dir.data || {};
+    const extra = [];
+    if (data.cars !== undefined) extra.push('当前车 ' + data.cars);
+    if (data.density !== undefined) extra.push('密度 ' + fmt(data.density, 2) + ' veh/km/lane');
+    if (data.v_mean !== undefined) extra.push('均速 ' + fmt(data.v_mean, 1) + ' km/h');
+    if (data.queue !== undefined) extra.push('排队 ' + data.queue);
+    if (data.los !== undefined) extra.push('LOS ' + data.los);
+    return `<div class="dirBlock ${S.selDir === dir ? 'cur' : ''}">
+      <h4><span class="swatch" style="background:${color}"></span>${dirLabel(dir)}
+        <span class="dirTag">${dir.legacy ? '旧版单线' : '独立方向'}</span></h4>
+      <div class="kv">
+        <div class="k">当前帧 (${S.frame})</div><div class="v">${fmt(cur, 4)}</div>
+        <div class="k">时序均值</div><div class="v">${st ? fmt(st.mean, 4) : '—'}</div>
+        <div class="k">峰值 / 最低</div><div class="v">${st ? fmt(st.max, 3) + ' / ' + fmt(st.min, 3) : '—'}</div>
+        <div class="k">拥堵占比(>0.05)</div><div class="v">${st ? (st.busy*100).toFixed(1) + '%' : '—'}</div>
+        ${extra.length ? '<div class="k">末帧状态</div><div class="v">' + extra.join(' · ') + '</div>' : ''}
+      </div>
+    </div>`;
+  }).join('');
+
   side.innerHTML = `
-    <h2><span class="swatch" style="background:${congestionColor(cur)}"></span>道路 ${r.a} ↔ ${r.b}</h2>
+    <h2>道路 ${road.a} ↔ ${road.b}</h2>
     <div class="kv">
-      <div class="k">端点</div><div class="v">${r.a} ↔ ${r.b}</div>
-      <div class="k">长度</div><div class="v">${fmt(r.length, 1)}</div>
-      <div class="k">车道数</div><div class="v">${r.lanes !== undefined ? r.lanes : '报告未导出'}</div>
-      <div class="k">当前帧 (${S.frame})</div><div class="v">${fmt(cur, 4)}</div>
-      <div class="k">时序均值</div><div class="v">${st ? fmt(st.mean, 4) : '—'}</div>
-      <div class="k">峰值 / 最低</div><div class="v">${st ? fmt(st.max, 3) + ' / ' + fmt(st.min, 3) : '—'}</div>
-      <div class="k">拥堵时长占比</div><div class="v">${st ? (st.busy*100).toFixed(1) + '% （>0.05）' : '—'}</div>
+      <div class="k">端点</div><div class="v">${road.a} ↔ ${road.b}</div>
+      <div class="k">长度</div><div class="v">${fmt(road.length, 1)}</div>
+      <div class="k">每方向车道</div><div class="v">${road.lanes !== undefined ? road.lanes : '—'}</div>
+      <div class="k">方向</div><div class="v">${road.dirs.map(dirLabel).join('　|　')}</div>
     </div>
-    <h3>该路段拥堵随时间变化</h3>
+    ${blocks}
+    <h3>${S.legacy ? '该道路的拥堵随时间变化' : '两个方向的拥堵随时间变化'}</h3>
     <div id="chartBox"><canvas id="roadChart"></canvas></div>
-    <div class="note">${r.logs ? '曲线为该路段每一帧的 congestion（共 ' + r.logs.length + ' 帧），竖线 = 当前帧。' : '该报告缺少这条路的 congestion 数据。'}</div>
+    <div class="note">${S.legacy
+      ? '曲线为这条无向道路每一帧的 congestion，竖线 = 当前帧。'
+      : '曲线为该方向每一采样点的 congestion（每 ' + S.logEvery + ' 帧一点）；竖线 = 当前帧，横轴 = 分析窗口；蓝/橙分别对应两个方向。'}</div>
     <button id="btnBack">返回概览</button>`;
+
   $('btnBack').onclick = clearSelection;
-  if (r.logs) drawRoadChart(r);
+  drawRoadChart(road);
 }
 
-function drawRoadChart(r){
+function drawRoadChart(road){
   const canvas = $('roadChart');
   if (!canvas) return;
-  const step = Math.max(1, Math.ceil(r.logs.length / 2000));   // 抽稀，保证流畅
-  const data = [];
-  for (let i = 0; i < r.logs.length; i += step) data.push({ x:i, y:r.logs[i] });
   if (S.chart){ try { S.chart.destroy(); } catch(e){} S.chart = null; }
+
+  const series = [];
+  const colors = ['#58a6ff', '#f0883e'];
+  for (const dir of road.dirs){
+    const logs = dir.data && dir.data.congestion_logs;
+    if (!logs || !logs.length) continue;
+    const step = Math.max(1, Math.ceil(logs.length / 2000));
+    const data = [];
+    for (let i = 0; i < logs.length; i += step){
+      data.push({x:i * S.logEvery, y:logs[i]});
+    }
+    series.push({
+      label: dirLabel(dir),
+      data,
+      borderColor: colors[series.length % colors.length],
+      backgroundColor: colors[series.length % colors.length] + '22',
+      borderWidth: S.selDir === dir ? 2.2 : 1.4,
+      pointRadius: 0,
+      fill: false,
+      tension: 0
+    });
+  }
+  if (!series.length){
+    canvas.parentElement.innerHTML = '<div class="note">该报告没有可画的拥堵序列。</div>';
+    return;
+  }
+
   if (window.Chart){
     try {
       S.chart = new Chart(canvas.getContext('2d'), {
-      type:'line',
-      data:{ datasets:[{ data, borderColor:'#58a6ff', backgroundColor:'#58a6ff22',
-                         borderWidth:1.4, pointRadius:0, fill:true, tension:0 }] },
-      options:{
-        responsive:true, maintainAspectRatio:false, animation:false,
-        parsing:false,
-        scales:{
-          x:{ type:'linear', min:0, max:Math.max(1, r.logs.length-1),
-              ticks:{ color:'#8b98a5', maxTicksLimit:6, font:{size:10} }, grid:{ color:'#2b3641' } },
-          y:{ min:0, max:1, ticks:{ color:'#8b98a5', font:{size:10} }, grid:{ color:'#2b3641' } }
+        type:'line',
+        data:{datasets:series},
+        options:{
+          responsive:true, maintainAspectRatio:false, animation:false, parsing:false,
+          interaction:{ mode:'index', intersect:false },
+          scales:{
+            x:{ type:'linear', min:S.winStart, max:Math.max(S.winStart + 1, S.winEnd),
+                ticks:{ color:'#8b98a5', maxTicksLimit:8, font:{size:10},
+                        callback:v => String(Math.round(v)) },
+                grid:{ color:'#2b3641' } },
+            y:{ min:0, max:1,
+                ticks:{ color:'#8b98a5', font:{size:10} },
+                grid:{ color:'#2b3641' } }
+          },
+          plugins:{
+            legend:{ display:true, labels:{ color:'#8b98a5', font:{size:10}, boxWidth:12 } },
+            tooltip:{ callbacks:{
+              title: items => items.length ? '帧 ' + Math.round(items[0].parsed.x) : '',
+              label: c => c.dataset.label + ' · ' + c.parsed.y.toFixed(4)
+            }}
+          },
+          onHover: chartHover,
+          onClick: chartClickFrame
         },
-        plugins:{ legend:{ display:false }, tooltip:{ callbacks:{ label: c => 'congestion ' + c.parsed.y.toFixed(4) } } }
-      },
-      plugins:[{ id:'cursor', afterDatasetsDraw(chart){
-        const { ctx, chartArea, scales } = chart;
-        const x = scales.x.getPixelForValue(S.frame);
-        if (x < chartArea.left || x > chartArea.right) return;
-        ctx.save(); ctx.strokeStyle = '#f85149'; ctx.lineWidth = 1; ctx.beginPath();
-        ctx.moveTo(x, chartArea.top); ctx.lineTo(x, chartArea.bottom); ctx.stroke(); ctx.restore();
-      }}]
+        plugins:[cursorPlugin()]
       });
+      S.chart.$hoverX = null;
+      return;
     } catch (err) {
-      console.warn('Chart.js 初始化失败，改用内置绘图：', err);
+      console.warn('Chart.js init failed, using fallback', err);
       S.chart = null;
-      drawFallbackChart(canvas, r.logs, S.frame);
     }
-  } else {
-    drawFallbackChart(canvas, r.logs, S.frame);
   }
+  drawFallbackChart(canvas, series, S.frame);
 }
 
-/* 离线兜底：不依赖 CDN 的简易折线图 */
-function drawFallbackChart(canvas, logs, cursor){
+function drawFallbackChart(canvas, series, cursor){
   const dpr = window.devicePixelRatio || 1;
-  const w = canvas.clientWidth || 360, h = canvas.clientHeight || 180;
+  const w = canvas.clientWidth || 380, h = canvas.clientHeight || 210;
   canvas.width = w * dpr; canvas.height = h * dpr;
   const ctx = canvas.getContext('2d');
   ctx.scale(dpr, dpr);
   ctx.clearRect(0, 0, w, h);
   ctx.strokeStyle = '#2b3641';
-  for (let i = 0; i <= 4; i++){ const y = h * i / 4; ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke(); }
-  ctx.strokeStyle = '#58a6ff'; ctx.lineWidth = 1.2; ctx.beginPath();
-  const step = Math.max(1, Math.ceil(logs.length / w));
-  let first = true;
-  for (let i = 0; i < logs.length; i += step){
-    const x = logs.length > 1 ? (i / (logs.length - 1)) * w : 0;
-    const y = h - Math.max(0, Math.min(1, logs[i])) * h;
-    first ? (ctx.moveTo(x,y), first = false) : ctx.lineTo(x,y);
+  for (let i = 0; i <= 4; i++){
+    const y = h * i / 4;
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
   }
-  ctx.stroke();
-  const cx = logs.length > 1 ? (cursor / (logs.length - 1)) * w : 0;
-  ctx.strokeStyle = '#f85149'; ctx.beginPath(); ctx.moveTo(cx,0); ctx.lineTo(cx,h); ctx.stroke();
+  const span = Math.max(1, S.winEnd - S.winStart);
+  const xOf = f => ((f - S.winStart) / span) * w;
+  series.forEach((s, idx) => {
+    ctx.strokeStyle = s.borderColor;
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    let first = true;
+    for (const p of s.data){
+      if (p.x < S.winStart || p.x > S.winEnd) continue;
+      const x = xOf(p.x), y = h - Math.max(0, Math.min(1, p.y)) * h;
+      first ? (ctx.moveTo(x, y), first = false) : ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    ctx.fillStyle = s.borderColor;
+    ctx.font = '10px sans-serif';
+    ctx.fillText(s.label, 6, 12 + idx * 12);
+  });
+  const x = xOf(cursor);
+  if (x >= 0 && x <= w){
+    ctx.strokeStyle = '#f85149';
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+  }
+  canvas.onmousemove = ev => {
+    const rect = canvas.getBoundingClientRect();
+    const px = Math.max(0, Math.min(w - 1, ev.clientX - rect.left));
+    S.hoverFrame = Math.round(S.winStart + (px / Math.max(1, w - 1)) * span);
+    setHoverText('悬停帧 ' + S.hoverFrame + ' · 点击跳到该帧');
+  };
+  canvas.onmouseleave = () => { S.hoverFrame = null; setHoverText(''); };
+  canvas.onclick = ev => {
+    const rect = canvas.getBoundingClientRect();
+    const px = Math.max(0, Math.min(w - 1, ev.clientX - rect.left));
+    setFrame(Math.round(S.winStart + (px / Math.max(1, w - 1)) * span));
+  };
 }
 
 /* ------------------------------------------------------------------ *
- *  车查询
+ *  Car query
  * ------------------------------------------------------------------ */
 function searchCar(){
   const raw = $('carInput').value.trim();
@@ -705,50 +1893,63 @@ function searchCar(){
   setFrame(Math.max(car.spawn, S.rangeMin));
 }
 $('btnSearch').onclick = searchCar;
-$('carInput').addEventListener('keydown', e => { if (e.key === 'Enter') searchCar(); });
+$('carInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') searchCar();
+});
 
 function renderCar(side, car){
   const st = carStateAt(car, S.frame);
   const speed = car.time_cost ? car.total_distance / car.time_cost : null;
-  const rows = [];
-  rows.push({ t:car.spawn, label:'生成', detail:'起点节点 ' + car.start });
-  for (let k = 0; k < car.nums.length; k++){
-    const isArrive = car.arrived && k === car.nums.length - 1;
-    rows.push({
-      t: car.nums[k],
-      label: isArrive ? '到达' : ('进入路段 ' + (k + 1)),
-      detail: isArrive ? ('终点节点 ' + car.goal)
-                       : (car.route[k] + ' → ' + car.route[k + 1])
-    });
+  let curText = '不在记录区间内';
+  let curCong = null;
+  if (st && st.arrived){
+    curText = '已到达终点';
+  } else if (st){
+    curText = '路段 ' + st.from + ' → ' + st.to +
+      '（进度 ' + (st.t * 100).toFixed(0) + '%）';
+    const roadForCar = findRoadFor(st.from, st.to);
+    const dir = roadForCar
+      ? (roadForCar.dirs.find(d => d.from === st.from && d.to === st.to)
+         || roadForCar.dirs[0])
+      : null;
+    curCong = dir ? valueFor(dir, S.frame) : null;
   }
-  const curRoadTxt = !st ? '不在记录区间内'
-    : st.arrived ? '已到达终点'
-    : ('路段 ' + st.idx + '：' + st.a + ' → ' + st.b + '（红点画在该路中点）');
 
+  const rows = car.events.map(ev => {
+    let label = '', detail = '';
+    if (ev.type === 'spawn'){ label = '生成'; detail = '起点节点 ' + ev.node; }
+    else if (ev.type === 'enter'){ label = '进入路段'; detail = ev.from + ' → ' + ev.to; }
+    else if (ev.type === 'arrive'){ label = '到达'; detail = '终点节点 ' + ev.node; }
+    return `<tr class="clickable ${ev.frame === S.frame ? 'cur' : ''}" data-frame="${ev.frame}">
+      <td>${ev.frame}</td><td>${label}</td><td>${detail}</td></tr>`;
+  }).join('');
+
+  const lastFrame = car.arrived ? car.arriveFrame : S.frames - 1;
   side.innerHTML = `
-    <h2>车 #${car.id} <span class="pill ${car.arrived ? 'arr' : 'run'}">${car.arrived ? '已到达' : '未完成'}</span></h2>
+    <h2>车 #${car.id}
+      <span class="pill ${car.arrived ? 'arr' : 'run'}">${car.arrived ? '已到达' : '未完成'}</span>
+    </h2>
     <div class="kv">
       <div class="k">起点 → 终点</div><div class="v">${car.start} → ${car.goal}</div>
       <div class="k">路线节点数</div><div class="v">${car.route.length}（${car.roads} 段）</div>
       <div class="k">完整路线</div><div class="v">${car.route.join(' → ')}</div>
       <div class="k">生成帧</div><div class="v">${car.spawn}</div>
-      <div class="k">${car.arrived ? '到达帧' : '记录截止帧'}</div><div class="v">${car.arrived ? car.arrive : car.last}${car.arrived ? '（' + (car.arrive - car.spawn) + ' 帧）' : '（未到达终点）'}</div>
+      <div class="k">${car.arrived ? '到达帧' : '记录截止帧'}</div>
+      <div class="v">${car.arrived ? car.arriveFrame : lastFrame}${car.arrived ? '（' + (car.arriveFrame - car.spawn) + ' 帧）' : '（未到达终点）'}</div>
       <div class="k">time_cost</div><div class="v">${fmt(car.time_cost, 4)}（仿真小时）</div>
-      <div class="k">total_distance</div><div class="v">${fmt(car.total_distance, 3)}</div>
-      <div class="k">均速</div><div class="v">${fmt(speed, 3)} 单位/小时</div>
-      <div class="k">当前帧 (${S.frame})</div><div class="v">${curRoadTxt}</div>
-      ${(st && !st.arrived) ? '<div class="k">该路段当前拥堵</div><div class="v">' +
-        fmt((S.roadByKey.get(key2(st.a, st.b)) || {}).logs ? S.roadByKey.get(key2(st.a, st.b)).logs[S.frame] : null, 4) + '</div>' : ''}
+      <div class="k">total_distance</div><div class="v">${fmt(car.total_distance, 3)} km</div>
+      <div class="k">均速</div><div class="v">${fmt(speed, 3)} km/h</div>
+      <div class="k">当前帧 (${S.frame})</div><div class="v">${curText}</div>
+      ${curCong !== null ? '<div class="k">当前方向拥堵</div><div class="v">' + fmt(curCong, 4) + '</div>' : ''}
     </div>
     <h3>行程记录（点行可跳到该帧）</h3>
     <div class="scroll"><table>
       <thead><tr><th>帧</th><th>事件</th><th>位置</th></tr></thead>
-      <tbody>${rows.map(x => `<tr class="clickable ${x.t === S.frame ? 'cur' : ''}" data-frame="${x.t}">
-        <td>${x.t}</td><td>${x.label}</td><td>${x.detail}</td></tr>`).join('')}</tbody>
+      <tbody>${rows}</tbody>
     </table></div>
     <div class="note">
-      · 时间轴已缩到该车的行程范围（${car.spawn} – ${car.arrived ? car.arrive : car.last}）<br>
-      · 蓝虚线 = 整体路线；红点 = 当前所在路段的中点<br>
+      · 时间轴已缩到该车的行程范围（${car.spawn} – ${lastFrame}）<br>
+      · 蓝虚线 = 整体路线；红点 = 当前所在路段上的位置（按右行偏移）<br>
       · 该车时间轴外的帧无法再前进（未完成的车只到记录截止帧）
     </div>
     <button id="btnBack2">返回概览</button>`;
@@ -757,7 +1958,74 @@ function renderCar(side, car){
     tr.onclick = () => { setFrame(+tr.dataset.frame); renderCar(side, car); });
 }
 
-/* 初始化空状态 */
+/* ------------------------------------------------------------------ *
+ *  Load report
+ * ------------------------------------------------------------------ */
+const overlay = $('overlay'), overlayText = $('overlayText');
+function showOverlay(t){ overlayText.textContent = t || '正在解析报告…'; overlay.classList.add('on'); }
+function hideOverlay(){ overlay.classList.remove('on'); }
+
+function loadReport(report, fileName){
+  buildScene(report, fileName);
+  const parts = [
+    (fileName || '报告'),
+    '节点 ' + S.nodes.length,
+    '道路 ' + S.roads.length,
+    S.legacy ? '旧格式（无方向）'
+      : '有向方向 ' + S.roads.reduce((s,r) => s + r.dirs.length, 0),
+    '车 ' + S.cars.length.toLocaleString(),
+    '帧 ' + S.frames.toLocaleString(),
+    '采样 ' + S.logEvery + ' 帧'
+  ];
+  if (!S.roads.some(r => r.dirs.some(d => d.data))) parts.push('⚠ 报告内没有 congestion 数据');
+  if (!S.cars.length) parts.push('⚠ 报告内没有车辆数据');
+  if (S.legacy) parts.push('⚠ 旧版报告：道路按无向显示');
+  $('fileMeta').textContent = parts.join(' · ');
+  $('legendDir').textContent = S.legacy
+    ? '旧报告：每条道路只画一条无向线'
+    : '双向道路：每个方向画在自己行进方向的右侧（不画箭头）';
+  drawMap();
+  setRange(0, S.frames - 1);
+  setFrame(0);
+  renderSide();
+  const analysis = $('analysis');
+  analysis.classList.remove('hidden');
+  S.analysisOpen = true;
+  analysis.classList.remove('collapsed');
+  $('btnAnalysisToggle').textContent = '收起分析';
+  document.querySelectorAll('#analysisTabs button').forEach(b =>
+    b.classList.toggle('active', b.dataset.atab === S.analysisTab));
+  $('analysisMsg').textContent = '';
+  setHoverText('');
+  $('analysisBody').scrollTop = 0;
+  syncAnalysisWindowInputs();
+  renderAnalysis();
+  requestAnimationFrame(() => { applyScreenScale(); drawBrush(); });
+}
+
+$('btnLoad').onclick = () => $('file').click();
+$('file').onchange = e => {
+  const f = e.target.files && e.target.files[0];
+  if (!f) return;
+  showOverlay('正在读取 ' + f.name + ' …');
+  const reader = new FileReader();
+  reader.onerror = () => { hideOverlay(); alert('读取文件失败'); };
+  reader.onload = () => {
+    showOverlay('正在解析 ' + (f.size / 1048576).toFixed(1) + ' MB …');
+    const text = reader.result;
+    parseSmart(text,
+      report => {
+        try { loadReport(report, f.name); }
+        catch (err){ alert('报告结构异常：' + err.message); }
+        hideOverlay();
+      },
+      err => { hideOverlay(); alert('JSON 解析失败：' + err.message); });
+  };
+  reader.readAsText(f);
+  e.target.value = '';
+};
+
+/* Empty state. */
 renderSide();
 </script>
 </body>

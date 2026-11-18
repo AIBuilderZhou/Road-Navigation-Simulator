@@ -1,94 +1,110 @@
-"""Change the attributes of the program here"""
-from dataclasses import dataclass
+"""All tunable parameters of the project live here.
 
-""" ROAD GENERATION """
+Edit the config block in main.py for one run; edit this file when you want a
+different default for every run. Every saved report stores a copy of these
+values, so a past run can be replayed exactly.
+"""
+from dataclasses import dataclass
+from typing import Optional
+
+
 @dataclass
 class Config_road_generator:
-    # Number of nodes in the diagram
+    # Number of nodes in the map.
     num_nodes: int
-    # Maximum lanes a road can have
-    # The capacity of the road = length * lanes
+    # Maximum lanes of a road. Every direction gets this many lanes, so a
+    # 3-lane road carries 3 lanes from A to B and 3 lanes from B to A.
     max_lanes: int
-    # The maximum nodes a node can connect to
+    # Legacy field: only core/road.py reads it. The Default generator uses the
+    # four grid directions and therefore caps the degree at 4.
     max_degree: int
-    # The probability of generating a connection to other nodes
+    # Legacy field: only core/road.py reads it. The Default generator ignores it.
     edge_prob: float
-    # The ID of a list of nodes forcing to have a maximum degree of 2
+    # Legacy field: only core/road.py reads it. The Default generator ignores it.
     force_single_road: list
-    # The connection limit of a node
-    # e.g. if it is 4, then node 12 cannot connect with node 20 as is it too far apart
+    # Legacy field: only core/road.py reads it. The Default generator limits
+    # extra roads by the distance derived from exp_road_length/var_road_length.
     connection_limit: int
-    # whether to make a ring connection.
-    # this will force to create a connection between the first node and the last node
+    # Legacy field: only core/road.py reads it. The Default generator never
+    # closes a ring.
     ring: bool
-    #expected average road length
+    # Expected average road length, in generator length units.
     exp_road_length: float
-    #variance of road length [0.00,1.00)
+    # Relative variation of the road length, in [0, 1).
     var_road_length: float
-    #variation of the angle [-pi/4,pi/4]
+    # Angular jitter of a new road in radians; the base angle is a grid direction.
     angle_variation: float
 
-""" CARS """
+
 @dataclass
 class Config_car_generator:
-    # Number of cars generated when the simulation starts
+    # Number of cars created before the first simulation frame.
     num_cars_initially: int
-    # The probability of generating a car every FRAME
+    # Probability of one spawn attempt per frame. This is frame-rate dependent:
+    # the expected number of attempts per simulated hour is new_car_prob * FPS.
     new_car_prob: float
-    # Number of new cars per generation
+    # Number of cars created by a successful spawn attempt.
     new_car_range: list[int]
 
 
-""" SIMULATION """
 @dataclass
 class Config_simulator:
-    # maximum speed of the fastest road class (km/h); slower classes get less
+    # Free-flow speed of the widest road, in km/h. Narrower roads lose
+    # lane_speed_step km/h for each missing lane.
     standard_speed: int
-    #length of the car [km]
+    # Car length, in km.
     car_length: float = 0.005
-    #minimum safe distance [km]
+    # Minimum standstill gap, in km.
     minimum_distance: float = 0.002
-    #reaction time [h]  (used by the legacy density formula)
-    reaction_time: float = 1.5/3600
-    #minimum speed even though the road is fully stuck [km/h]
+    # Reaction time, in hours. Kept for the legacy density formula.
+    reaction_time: float = 1.5 / 3600
+    # Lowest speed used by the metrics, in km/h.
     minimum_speed: float = 5
-    #how many metres one length unit of the generator is (10 -> a 10 unit road is a 100 m block)
+    # Metres represented by one generator length unit.
     meters_per_unit: float = 10.0
-    #vehicles per km per lane at standstill -> used for density, queueing and spillback
+    # Vehicles per km per lane at standstill.
     jam_density: float = 130.0
-    #free-flow speed lost per missing lane (km/h); the widest road keeps standard_speed
+    # Free-flow speed lost per missing lane, in km/h.
     lane_speed_step: float = 10.0
-    #IDM (Intelligent Driver Model) car-following parameters
-    idm_accel: float = 1.5           #maximum acceleration [m/s^2]
-    idm_decel: float = 2.0           #comfortable deceleration [m/s^2]
-    idm_time_gap: float = 1.2        #desired time headway [s]
-    idm_min_gap: float = 2.0         #standstill gap [m]
-    idm_delta: float = 4.0           #free-road exponent
-    #write one congestion sample every N frames (1 = every frame, keeps the analysis viewer exact)
-    log_every: int = 1
+    # Intelligent Driver Model (IDM) parameters.
+    idm_accel: float = 1.5       # maximum acceleration [m/s^2]
+    idm_decel: float = 2.0       # comfortable deceleration [m/s^2]
+    idm_time_gap: float = 1.2    # desired time headway [s]
+    idm_min_gap: float = 2.0     # standstill gap [m]
+    idm_delta: float = 4.0       # free-road exponent
+    # Write one congestion sample every N frames. At the default FPS=43200,
+    # 12 frames = one simulated second, which keeps the report around 11 MB
+    # for a 100-node / 2-hour run.
+    log_every: int = 12
 
 
-#pic
-#Frames per simulated hour -> one frame lasts 3600/FPS seconds.
-#Car-following (IDM) needs a time step of about one second, so FPS should stay >= 1800;
-#240 (=15 s per frame) is only fine for the old density-only model.
-FPS = 24*1800
-#The total frames in the simulatiom (= 2 hours with FPS=3600)
-FRAMES = FPS*2
-#The scale of every PNG file generated
-PIC_SCALE = 2
-#Whether generate pictures of the mid-process in the simulation
-SHOW_MID_PROCESS = False
-#The frequency of generating mid-process pictures
-#This will only be effective when SHOW_MID_PROCESS is True
-FRAMES_PER_OUTPUT = 30
-#Whether automatically generate GIF file when the simulating
-#This will only be effective when SHOW_MID_PROCESS is True
-#If it is true, the mid-process pictures will not be generated
-GENERATE_GIF = False
+@dataclass
+class RunConfig:
+    """Settings that control one run, separate from the physical model."""
+    fps: float
+    frames: int
+    pic_scale: float
+    show_mid_process: bool
+    frames_per_output: int
+    generate_gif: bool
+    replay_report: str
+    seed: Optional[int]
+    gif_fps: int = 24
 
-#Replay a past report instead of generating a new scene.
-#"" = generate a new road network and cars from the parameters above.
-#"report-YYYYMMDD-HHMMSS.json" (or any readable path) = replay that report:
-#the road network, the car spawn plan and every running parameter are read from it.
-REPLAY_REPORT = ""
+
+# Run defaults. Edit the config block in main.py for a single run; edit these
+# values only when you want a different default for every run.
+FPS = 24 * 1800            # frames per simulated hour -> 1/12 s per frame
+FRAMES = FPS * 2           # simulated frames (2 hours with the default FPS)
+PIC_SCALE = 2              # output image scale
+SHOW_MID_PROCESS = False   # write frames while the simulation is running
+FRAMES_PER_OUTPUT = 30     # write one frame every N simulation frames
+GENERATE_GIF = False       # collect frames in memory and write a GIF at the end
+GIF_FPS = 24               # playback rate of the GIF
+SEED = None                # None = random scene; int = reproducible scene
+
+# Replay a past report instead of generating a new scene.
+# "" = generate a new road network and cars from the parameters above.
+# "report-YYYYMMDD-HHMMSS.json" (or any readable path) = replay that report:
+# the road network, the car spawn plan and every running parameter are read from it.
+REPLAY_REPORT = "template-20261118-194947.json"

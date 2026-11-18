@@ -1,123 +1,147 @@
+"""Tile-based road generation that roughly follows an urban street pattern.
+
+The generator starts at node 0 and grows a spanning tree on a square grid:
+every new node is attached to an existing node through one of the four free
+grid directions. Extra roads ("upgrades") are then added between nearby nodes
+to create three- and four-way junctions.
+
+The module comment below documents the design target distribution. The actual
+distribution depends on the random growth and is usually not exactly the
+target; the loop that tries to reach it can stop early when a degree pool is
+empty. See docs/02-road-generation.md for the measured behaviour.
+
+Fields of Config_road_generator that this generator reads:
+    num_nodes, max_lanes, exp_road_length, var_road_length, angle_variation
+Fields that only the legacy core/road.py reads:
+    max_degree, edge_prob, force_single_road, connection_limit, ring
 """
-This is the road generation algorithm following real-life traffic situation
-the model will be similar to a tiled map
-Some attributes:
-Average 3 road per node
-for each node:
-1 way - 18%
-3 way - 62%
-4 way - 19%-21%
-"""
-from dataclasses import dataclass
-from attributes import *
 import math
 import random
-from road_generation.classes import Road,Node
 
-UP = [0,1]
-DOWN = [0,-1]
-LEFT = [-1,0]
-RIGHT = [1,0]
-#x+y*2
-DIRECTIONS = {
-    -1:2, #left
-    1:0, #right
-    2:1, #up
-    -2:3 #down
-}
-INDEX_TO_DIR = [[1,0],[0,1],[-1,0],[0,-1]]
+from road_generation.classes import Node, Road
 
-def default_road(road_cfg:Config_road_generator):
-    """the road generation algorithm following real-life traffic situation
-    returns a networkx Graph, a drop-in replacement of core.road.create_road_graph"""
-    ''' step 1 - initialization '''
-    ''' the expected attributes will be calculated '''
+# Grid directions as (x, y) vectors, in connection-slot order:
+# slot 0 = right, slot 1 = up, slot 2 = left, slot 3 = down.
+RIGHT = (1, 0)
+UP = (0, 1)
+LEFT = (-1, 0)
+DOWN = (0, -1)
+INDEX_TO_DIR = [RIGHT, UP, LEFT, DOWN]
+# The old code used x + 2*y as a key; keep the same mapping for compatibility.
+DIRECTIONS = {v[0] + v[1] * 2: i for i, v in enumerate(INDEX_TO_DIR)}
 
-    exp = [int(road_cfg.num_nodes*0.18),int(road_cfg.num_nodes*0.62),int(road_cfg.num_nodes*0.2)]
-    origin = Node(0,[0,0],[0,0],[None,None,None,None])
+
+def default_road(road_cfg):
+    """Return (nodes, roads) for one randomly generated map.
+
+    The design target is about 18% one-way, 62% three-way and 20% four-way
+    junctions, but the realised distribution can differ (see module docstring).
+    """
+    # Step 1: expected number of nodes for each degree class.
+    exp = [
+        int(road_cfg.num_nodes * 0.18),
+        int(road_cfg.num_nodes * 0.62),
+        int(road_cfg.num_nodes * 0.2),
+    ]
+    origin = Node(0, [0, 0], [0, 0], [None, None, None, None])
     num = 1
-    occupied_pos = [[0,0]]
+    occupied_pos = [[0, 0]]
     nodes = [origin]
     roads = []
-    #degrees 0..4, so 5 buckets are needed
-    nodes_degrees = [[],[],[],[],[]]
+    # Kept as a diagnostic bucket from the original generator. It is filled
+    # once below, but the upgrade loop below uses live degree counts instead.
+    nodes_degrees = [[], [], [], [], []]
 
-    def new_road(a:Node,b:Node):
+    def new_road(a: Node, b: Node):
         lanes = random.randint(1, road_cfg.max_lanes)
-        road = Road(a.id,b.id, math.dist(a.pos,b.pos),lanes)
-        roads.append(road)
+        roads.append(Road(a.id, b.id, math.dist(a.pos, b.pos), lanes))
         a.degrees += 1
         b.degrees += 1
 
-    def has_edge(a:Node,b:Node):
-        """whether a road between a and b already exists"""
-        return any({r.ptA,r.ptB} == {a.id,b.id} for r in roads)
+    def has_edge(a: Node, b: Node):
+        """Whether a road between a and b already exists."""
+        return any({r.ptA, r.ptB} == {a.id, b.id} for r in roads)
 
-    def new_node(id:int,father:Node,direction:list):
+    def new_node(node_id: int, father: Node, direction):
         nonlocal num
 
-        #mark the father nodes connection as CONNECTED
-        direction_index = DIRECTIONS[direction[0]+direction[1]*2]
-        father.connection[direction_index] = id
+        # Mark the father's connection slot as connected.
+        direction_index = DIRECTIONS[direction[0] + direction[1] * 2]
+        father.connection[direction_index] = node_id
 
-        #calculate the position of the node
-        angle = math.pi*(direction_index/2) + (random.random()*road_cfg.angle_variation*2-road_cfg.angle_variation)
-        distance = road_cfg.exp_road_length * (1 + random.random()*road_cfg.var_road_length*2-road_cfg.var_road_length)
-        x = father.pos[0]+math.cos(angle)*distance
-        y = father.pos[1]+math.sin(angle)*distance
-        tx = father.tiled_pos[0]+direction[0]
-        ty = father.tiled_pos[1]+direction[1]
+        # Position = father + grid direction rotated by a small random angle.
+        angle = math.pi * (direction_index / 2) + (
+            random.random() * road_cfg.angle_variation * 2
+            - road_cfg.angle_variation
+        )
+        distance = road_cfg.exp_road_length * (
+            1 + random.random() * road_cfg.var_road_length * 2
+            - road_cfg.var_road_length
+        )
+        x = father.pos[0] + math.cos(angle) * distance
+        y = father.pos[1] + math.sin(angle) * distance
+        tx = father.tiled_pos[0] + direction[0]
+        ty = father.tiled_pos[1] + direction[1]
 
-        #set the connection status
-        conn = [None,None,None,None]
+        # The new node's opposite slot points back to its father.
+        conn = [None, None, None, None]
         conn[(direction_index + 2) % 4] = father.id
 
-        #create node and push in to the list
-        node = Node(id, [x, y], [tx, ty], conn, 0)
+        node = Node(node_id, [x, y], [tx, ty], conn, 0)
         nodes.append(node)
-        new_road(father,node)
+        new_road(father, node)
 
-        #update variables
-        occupied_pos.append([tx,ty])
+        occupied_pos.append([tx, ty])
         num += 1
 
-    #start randomly generate nodes
-    for i in range(1,road_cfg.num_nodes):
-        #choose a random existed node
+    # Step 2: grow the spanning tree.
+    for _ in range(1, road_cfg.num_nodes):
         while True:
             father = random.choice(nodes)
-            founded = False
-            direction = random.randint(0,3)
+            found = False
+            direction = random.randint(0, 3)
             for _ in range(4):
                 if father.connection[direction] is None:
-                    if not [father.tiled_pos[0]+INDEX_TO_DIR[direction][0],father.tiled_pos[1]+INDEX_TO_DIR[direction][1]] in occupied_pos:
-                        founded = True
+                    next_cell = [
+                        father.tiled_pos[0] + INDEX_TO_DIR[direction][0],
+                        father.tiled_pos[1] + INDEX_TO_DIR[direction][1],
+                    ]
+                    if next_cell not in occupied_pos:
+                        found = True
                         break
-                direction = (direction+1)%4
-            if founded:
+                direction = (direction + 1) % 4
+            if found:
                 break
-        new_node(num,father,INDEX_TO_DIR[direction])
+        new_node(num, father, INDEX_TO_DIR[direction])
 
-    #calculate the number of nodes having specific degrees
-    for i in nodes:
-        nodes_degrees[i.degrees].append(i)
-    max_d = road_cfg.exp_road_length * (1+road_cfg.var_road_length)
+    # Step 3: count the initial degree distribution.
+    for node in nodes:
+        nodes_degrees[node.degrees].append(node)
 
+    max_d = road_cfg.exp_road_length * (1 + road_cfg.var_road_length)
     targets = {1: exp[0], 3: exp[1], 4: exp[2]}
 
+    # Step 4: add roads until each target count is reached, or no candidate
+    # is left. This loop cannot create degree-1 nodes, so the first target is
+    # often already satisfied (or unreachable) and is skipped.
     for deg, target in targets.items():
         while sum(1 for n in nodes if n.degrees == deg) < target:
             pool = [n for n in nodes if n.degrees == deg - 1]
             if not pool:
                 break
             a = random.choice(pool)
-            cand = [b for b in nodes if b is not a and b.degrees < 4
-                    and math.dist(a.pos, b.pos) <= max_d
-                    and not has_edge(a, b)]
-            if not cand:
+            candidates = [
+                b
+                for b in nodes
+                if b is not a
+                and b.degrees < 4
+                and math.dist(a.pos, b.pos) <= max_d
+                and not has_edge(a, b)
+            ]
+            if not candidates:
                 break
-            #NOTE: these extra roads are not aligned to the tiled grid, so they
-            #are NOT written into node.connection (only into the roads list)
-            new_road(a, random.choice(cand))
-    return nodes,roads
+            # These extra roads are not aligned to the tile grid, so they are
+            # not written into node.connection; they only live in the roads list.
+            new_road(a, random.choice(candidates))
 
+    return nodes, roads

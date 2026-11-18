@@ -1,12 +1,13 @@
-""" Record the logs of the simulation and store it into logs/reports directory """
+"""Record a simulation run as JSON and replay a previous report."""
 import json
 import os
 from dataclasses import asdict
-from time import time,localtime,strftime
+from time import localtime, strftime, time
 
-import networkx as nx
+from road_generation.classes import Node, Road
 
-from road_generation.classes import Road,Node
+REPORT_SCHEMA = 2
+REPORT_DIR = os.path.join("logs", "reports")
 
 Nodes = []
 Roads = []
@@ -14,11 +15,9 @@ Cars = []
 Congestion = []
 Params = {}
 
-REPORT_DIR = os.path.join("logs","reports")
-
 
 def reset():
-    """清空上一次运行的累积（同一进程里连续跑多次时必需）"""
+    """Clear the accumulators (needed when one process runs several scenes)."""
     Nodes.clear()
     Roads.clear()
     Cars.clear()
@@ -26,116 +25,240 @@ def reset():
     Params.clear()
 
 
-def record_map(node:list[Node],road:list[Road]):
-    for i in node:
-        Nodes.append(i.asdict())
-    for j in road:
-        Roads.append(j.asdict())
-    print("nodes:",Nodes)
-    print("roads:",Roads)
+def record_map(nodes, roads):
+    for n in nodes:
+        Nodes.append(n.asdict())
+    for i, r in enumerate(roads):
+        road = r.asdict()
+        road["id"] = i
+        Roads.append(road)
 
 
-def restore_map(node:list[dict],road:list[dict]):
-    """把报告里的 nodes/roads 还原成生成器使用的对象，用于回放"""
+def restore_map(node_list, road_list):
+    """Rebuild the generator objects from a report, used by replay."""
     nodes = []
     roads = []
-    for i in node:
-        nodes.append(Node(i['id'],i['pos'],i['tiled_pos'],i['connection'],i['degrees']))
-    for j in road:
-        roads.append(Road(j['ptA'],j['ptB'],j['length'],j.get('lanes',1)))
-    return nodes,roads
+    for n in node_list:
+        nodes.append(
+            Node(
+                n["id"],
+                n["pos"],
+                n["tiled_pos"],
+                n["connection"],
+                n["degrees"],
+            )
+        )
+    for r in road_list:
+        roads.append(Road(r["ptA"], r["ptB"], r["length"], r.get("lanes", 1)))
+    return nodes, roads
 
 
-def record_congestion(G:nx.Graph):
-    for i in G.edges():
-        d = G[i[0]][i[1]]
-        c = {"endpoints":i,"congestion_logs":d["congestion_logs"]}
-        #多指标快照（旧报告没有这些字段，分析器会自动忽略未知字段）
-        for k in ("density","v_mean","speed_ratio","queue","los"):
-            if k in d:
-                c[k] = d[k]
-        Congestion.append(c)
+def _car_events(car):
+    """Convert the internal log encoding into explicit events for the viewer."""
+    events = [
+        {"frame": int(car.spawn_frame), "type": "spawn", "node": car.startPt}
+    ]
+    route = car.route or []
+    numeric_index = 0
+    for entry in car.logs:
+        if isinstance(entry, bool) or not isinstance(entry, (int, float)):
+            continue
+        edge_index = numeric_index + 1
+        if edge_index + 1 < len(route):
+            events.append(
+                {
+                    "frame": int(entry),
+                    "type": "enter",
+                    "from": route[edge_index],
+                    "to": route[edge_index + 1],
+                }
+            )
+        numeric_index += 1
+    if car.destination:
+        arrive = car.arrive_frame if car.arrive_frame >= 0 else car.spawn_frame
+        events.append(
+            {"frame": int(arrive), "type": "arrive", "node": car.endPt}
+        )
+    return events
+
+
+def record_congestion(G):
+    """Write one row per directed arc, with its own congestion time series."""
+    for u, v, d in G.edges(data=True):
+        entry = {
+            "road": d.get("road_id"),
+            "from": u,
+            "to": v,
+            "lanes": d.get("lanes", 1),
+            "congestion_logs": d.get("congestion_logs", []),
+        }
+        for key in (
+            "cars",
+            "density",
+            "v_mean",
+            "speed_ratio",
+            "queue",
+            "los",
+            "congestion",
+        ):
+            if key in d:
+                entry[key] = d[key]
+        Congestion.append(entry)
 
 
 def record_car_logs(cars):
-    for i in cars:
-        Cars.append(i.asdict())
+    for c in cars:
+        Cars.append(
+            {
+                "id": c.id,
+                "start": c.startPt,
+                "goal": c.endPt,
+                "spawn_frame": c.spawn_frame,
+                "route": c.route,
+                "events": _car_events(c),
+                "time_cost": c.time_cost,
+                "total_distance": c.tot_distance,
+                "arrived": c.destination,
+                "arrive_frame": c.arrive_frame if c.destination else -1,
+            }
+        )
 
 
-def record_params(road,cars,simulator,run,replay=""):
-    """把这次运行用到的全部参数一起写进报告，供下次回放"""
+def record_params(road, cars, simulator, run, replay=""):
+    """Store every parameter used by the run, so the report can be replayed."""
     Params.clear()
-    Params.update({"road":asdict(road),
-                   "cars":asdict(cars),
-                   "simulator":asdict(simulator),
-                   "run":dict(run),
-                   "replay":replay})
+    Params.update(
+        {
+            "road": asdict(road),
+            "cars": asdict(cars),
+            "simulator": asdict(simulator),
+            "run": dict(run),
+            "replay": replay,
+        }
+    )
 
 
-def save_logs():
-    report = {"params":Params,"nodes":Nodes,"roads":Roads,
-              "congestion":Congestion,"car_logs":Cars}
-    os.makedirs(REPORT_DIR,exist_ok=True)
-    path = os.path.join(REPORT_DIR,f"report-{strftime('%Y%m%d-%H%M%S',localtime(time()))}.json")
-    with open(path,'w') as f:
-        json.dump(report,f)
+def _unique_path(path):
+    """Avoid overwriting a report/image when two runs end in the same second."""
+    if not os.path.exists(path):
+        return path
+    base, ext = os.path.splitext(path)
+    counter = 1
+    while os.path.exists(f"{base}-{counter}{ext}"):
+        counter += 1
+    return f"{base}-{counter}{ext}"
+
+
+def save_logs(summary=None):
+    report = {
+        "schema": REPORT_SCHEMA,
+        "params": Params,
+        "nodes": Nodes,
+        "roads": Roads,
+        "congestion": Congestion,
+        "cars": Cars,
+    }
+    if summary is not None:
+        report["summary"] = summary
+    os.makedirs(REPORT_DIR, exist_ok=True)
+    path = os.path.join(
+        REPORT_DIR,
+        f"report-{strftime('%Y%m%d-%H%M%S', localtime(time()))}.json",
+    )
+    path = _unique_path(path)
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(report, f, ensure_ascii=False, separators=(",", ":"))
     return path
 
 
-def find_report(name:str):
-    """报告名可以是路径，也可以是 logs/reports 下的文件名（.json 可省）"""
-    candidates = [name,os.path.join(REPORT_DIR,name),os.path.join(REPORT_DIR,name+".json")]
-    for p in candidates:
-        if os.path.isfile(p):
-            return p
+def find_report(name):
+    """A report name can be a path, or a filename under logs/reports."""
+    candidates = [
+        name,
+        os.path.join(REPORT_DIR, name),
+        os.path.join(REPORT_DIR, name + ".json"),
+    ]
+    for path in candidates:
+        if os.path.isfile(path):
+            return path
     raise FileNotFoundError(f"report not found: {name} (tried {candidates})")
 
 
-def load_report(name:str):
-    with open(find_report(name),encoding="utf-8") as f:
+def load_report(name):
+    with open(find_report(name), encoding="utf-8") as f:
         return json.load(f)
 
 
-def apply_params(params:dict,cfg_road,cfg_car,cfg_simulation):
-    """用报告里的参数覆盖当前 Config 对象；报告里缺的字段保持当前值"""
-    def merge(cfg,stored):
+def apply_params(params, cfg_road, cfg_car, cfg_simulation):
+    """Overlay the report's parameter blocks on the current config objects."""
+
+    def merge(cfg, stored):
         base = asdict(cfg)
-        for k,v in (stored or {}).items():
-            if k in base:
-                base[k] = v
+        for key, value in (stored or {}).items():
+            if key in base:
+                base[key] = value
         return type(cfg)(**base)
-    return (merge(cfg_road,params.get("road")),
-            merge(cfg_car,params.get("cars")),
-            merge(cfg_simulation,params.get("simulator")))
+
+    return (
+        merge(cfg_road, params.get("road")),
+        merge(cfg_car, params.get("cars")),
+        merge(cfg_simulation, params.get("simulator")),
+    )
 
 
-def apply_run_params(run:dict):
-    """把 run 段写回 attributes，并同步那些之前用 from attributes import * 复制走该名字的模块"""
-    import sys
+def apply_run_params(run, base=None):
+    """Return a RunConfig with the contents of a report's ``run`` block."""
     import attributes
-    applied = {}
-    prefixes = ("__main__","main","attributes","visualize","core","road_generation","algorithm")
-    for name,value in (run or {}).items():
-        if not hasattr(attributes,name):
-            continue
-        setattr(attributes,name,value)
-        applied[name] = value
-        for mod in list(sys.modules.values()):
-            modname = getattr(mod,"__name__","") or ""
-            if mod is attributes or modname.split(".")[0] not in prefixes:
-                continue
-            if hasattr(mod,name):
-                setattr(mod,name,value)
-    return applied
+
+    if base is None:
+        base = attributes.RunConfig(
+            fps=attributes.FPS,
+            frames=attributes.FRAMES,
+            pic_scale=attributes.PIC_SCALE,
+            show_mid_process=attributes.SHOW_MID_PROCESS,
+            frames_per_output=attributes.FRAMES_PER_OUTPUT,
+            generate_gif=attributes.GENERATE_GIF,
+            replay_report=attributes.REPLAY_REPORT,
+            seed=attributes.SEED,
+            gif_fps=attributes.GIF_FPS,
+        )
+    data = asdict(base)
+    mapping = {
+        "FPS": "fps",
+        "FRAMES": "frames",
+        "PIC_SCALE": "pic_scale",
+        "SHOW_MID_PROCESS": "show_mid_process",
+        "FRAMES_PER_OUTPUT": "frames_per_output",
+        "GENERATE_GIF": "generate_gif",
+        "GIF_FPS": "gif_fps",
+        "SEED": "seed",
+    }
+    for key, field in mapping.items():
+        if key in (run or {}):
+            data[field] = run[key]
+        elif field in (run or {}):
+            data[field] = run[field]
+    return attributes.RunConfig(**data)
 
 
-def replay_spawn_plan(report:dict):
-    """还原车辆生成计划：{帧: [(id, 起点, 终点), ...]}，起点终点为空表示随机"""
+def replay_spawn_plan(report):
+    """Return {frame: [(id, start, goal), ...]} for replay.
+
+    Supports both the current ``cars`` list with explicit spawn frames and the
+    legacy ``car_logs`` list where the first log entry is ("Spawned", frame).
+    """
     plan = {}
-    for c in report.get("car_logs",[]):
-        logs = c.get("logs") or []
-        frame = logs[0][1] if logs and isinstance(logs[0],(list,tuple)) else 0
-        plan.setdefault(int(frame),[]).append((c.get("id"),c.get("startPt"),c.get("endPt")))
-    for v in plan.values():
-        v.sort()
+    cars = report.get("cars") or report.get("car_logs") or []
+    for c in cars:
+        if c.get("spawn_frame") is not None:
+            frame = int(c["spawn_frame"])
+        else:
+            logs = c.get("logs") or []
+            first = logs[0] if logs else None
+            frame = int(first[1]) if isinstance(first, (list, tuple)) else 0
+        start = c.get("start", c.get("startPt"))
+        goal = c.get("goal", c.get("endPt"))
+        plan.setdefault(frame, []).append((c.get("id"), start, goal))
+    for entries in plan.values():
+        entries.sort()
     return plan

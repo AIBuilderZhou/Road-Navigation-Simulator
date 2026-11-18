@@ -1,27 +1,39 @@
-import imageio
-from attributes import *
+"""Assemble the PNG frames in logs/frames into one GIF."""
+import os
 from pathlib import Path
-from tqdm import tqdm
-from time import time,localtime,strftime
-from attributes import *
+from time import localtime, strftime, time
 
-def count_files_in_directory(directory):
-    # 确保路径存在
-    if not Path(directory).exists():
-        return 0
-    # 使用glob模式匹配所有文件（不包括子目录中的文件）
-    file_count = len(list(Path(directory).glob('*'))) - len(list(Path(directory).glob('*/')))
-    return file_count
+import imageio.v2 as imageio
+
+import attributes
 
 
-# 示例使用
-directory_path = Path("logs/frames")
-file_count = count_files_in_directory(directory_path)
-print("total frames:",file_count)
+def frame_number(path):
+    digits = "".join(ch for ch in path.stem if ch.isdigit())
+    return int(digits) if digits else 0
 
 
-frames = []
-for t in tqdm(range(file_count-1)):
-    frames.append(imageio.imread(f"logs/frames/frame{t*FRAMES_PER_OUTPUT}.png"))
+def main():
+    directory = Path("logs/frames")
+    paths = sorted(directory.glob("frame*.png"), key=frame_number)
+    print("total frames:", len(paths))
+    if not paths:
+        print("no frames found; enable SHOW_MID_PROCESS first")
+        return
 
-imageio.mimsave(f"logs/gif/traffic-{strftime('%Y%m%d-%H%M%S', localtime(time()))}.gif", frames, fps=FPS)
+    frames = [imageio.imread(path) for path in paths]
+    Path("logs/gif").mkdir(parents=True, exist_ok=True)
+    stamp = strftime("%Y%m%d-%H%M%S", localtime(time()))
+    output = f"logs/gif/traffic-{stamp}.gif"
+    if os.path.exists(output):
+        base, ext = os.path.splitext(output)
+        counter = 1
+        while os.path.exists(f"{base}-{counter}{ext}"):
+            counter += 1
+        output = f"{base}-{counter}{ext}"
+    imageio.mimsave(output, frames, fps=attributes.GIF_FPS)
+    print("wrote", output)
+
+
+if __name__ == "__main__":
+    main()
