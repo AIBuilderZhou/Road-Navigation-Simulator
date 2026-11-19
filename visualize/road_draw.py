@@ -195,3 +195,69 @@ def draw(G, cars, frame, frames, speed, run):
         fig.savefig(f"logs/frames/frame{frame}.png")
 
     plt.close(fig)
+
+
+def draw_uxsim(G, world, frame, frames, speed, run, link_to_edge):
+    """Write/append one frame from the live UXsim world.
+
+    UXsim owns the vehicles, so this is the equivalent of ``draw`` for the
+    new engine.  Only the current one-second state is available because the
+    per-vehicle trajectory log is intentionally disabled to keep memory low.
+    """
+    values = {
+        (u, v): d.get("congestion", 0.0)
+        for u, v, d in G.edges(data=True)
+    }
+    fig, ax = plt.subplots(figsize=(15 * run.pic_scale, 11.25 * run.pic_scale))
+    pos = draw_network(fig, ax, G, values, run)
+
+    cars_on_road = 0
+    cars_passed = 0
+    cars_by_direction = {"AB": 0, "BA": 0}
+    for vehicle in world.VEHICLES.values():
+        if vehicle.state == "end":
+            cars_passed += 1
+            continue
+        if vehicle.state != "run" or vehicle.link is None:
+            continue
+        edge = link_to_edge.get(vehicle.link.name)
+        if edge is None or not G.has_edge(*edge):
+            continue
+        u, v = edge
+        x, y = vehicle.get_xy_coords()
+        nx_, ny_ = _right_normal_display(
+            ax, pos[u][0], pos[u][1], pos[v][0], pos[v][1]
+        )
+        offset = _offset_px(G[u][v].get("lanes", 1), fig.dpi)
+        px, py = ax.transData.transform((x, y))
+        sx, sy = ax.transData.inverted().transform(
+            (px + nx_ * offset, py + ny_ * offset)
+        )
+        ax.scatter(sx, sy, color="red", s=55, zorder=10,
+                   edgecolors="white", linewidths=0.4)
+        cars_on_road += 1
+        cars_by_direction[G[u][v].get("direction", "AB")] += 1
+
+    ax.set_title("Traffic Simulation (UXsim)", size=16 * run.pic_scale)
+    stats = (
+        f"Free-flow speed: {speed} km/h\n"
+        f"Frame: {frame} / {run.frames}\n"
+        f"Cars on road: {cars_on_road} "
+        f"(A->B {cars_by_direction['AB']}, B->A {cars_by_direction['BA']})\n"
+        f"Cars arrived: {cars_passed}"
+    )
+    fig.text(0.02, 0.04, stats, fontsize=13 * run.pic_scale,
+             ha="left", va="bottom",
+             bbox={"facecolor": "white", "alpha": 0.78, "edgecolor": "none",
+                   "pad": 4})
+
+    if run.generate_gif:
+        buffer = BytesIO()
+        fig.savefig(buffer, format="png")
+        buffer.seek(0)
+        frames.append(imageio.imread(buffer))
+    else:
+        os.makedirs("logs/frames", exist_ok=True)
+        fig.savefig(f"logs/frames/frame{frame}.png")
+
+    plt.close(fig)

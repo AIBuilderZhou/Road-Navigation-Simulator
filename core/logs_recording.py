@@ -108,6 +108,7 @@ def record_congestion(G):
 
 def record_car_logs(cars):
     for c in cars:
+        events = getattr(c, "events", None)
         Cars.append(
             {
                 "id": c.id,
@@ -115,7 +116,7 @@ def record_car_logs(cars):
                 "goal": c.endPt,
                 "spawn_frame": c.spawn_frame,
                 "route": c.route,
-                "events": _car_events(c),
+                "events": events if events is not None else _car_events(c),
                 "time_cost": c.time_cost,
                 "total_distance": c.tot_distance,
                 "arrived": c.destination,
@@ -221,6 +222,8 @@ def apply_run_params(run, base=None):
             replay_report=attributes.REPLAY_REPORT,
             seed=attributes.SEED,
             gif_fps=attributes.GIF_FPS,
+            gif_engine=attributes.GIF_ENGINE,
+            gif_timestep_skip=attributes.GIF_TIMESTEP_SKIP,
         )
     data = asdict(base)
     mapping = {
@@ -231,6 +234,8 @@ def apply_run_params(run, base=None):
         "FRAMES_PER_OUTPUT": "frames_per_output",
         "GENERATE_GIF": "generate_gif",
         "GIF_FPS": "gif_fps",
+        "GIF_ENGINE": "gif_engine",
+        "GIF_TIMESTEP_SKIP": "gif_timestep_skip",
         "SEED": "seed",
     }
     for key, field in mapping.items():

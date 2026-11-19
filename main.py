@@ -5,15 +5,13 @@ from time import localtime, perf_counter, strftime, time as now
 
 import imageio.v2 as imageio
 import networkx as nx
-from tqdm import tqdm
 
 import algorithm.astar as astar
 import attributes
 import core.car as car_module
-import core.car_simulation as processing
 import core.logs_recording as recording
+import core.uxsim_simulation as simulation
 import visualize.result_congestion as result_congestion
-import visualize.road_draw as visualize
 from attributes import (
     Config_car_generator,
     Config_road_generator,
@@ -34,6 +32,8 @@ def _run_dict(run):
         "FRAMES_PER_OUTPUT": run.frames_per_output,
         "GENERATE_GIF": run.generate_gif,
         "GIF_FPS": run.gif_fps,
+        "GIF_ENGINE": run.gif_engine,
+        "GIF_TIMESTEP_SKIP": run.gif_timestep_skip,
         "SEED": run.seed,
     }
 
@@ -69,7 +69,8 @@ def run_simulation(cfg_road, cfg_car, cfg_simulation, run):
             f"[replay] {run.replay_report}: {len(node_list)} nodes, "
             f"{len(road_list)} roads, "
             f"{sum(len(v) for v in spawn_plan.values())} cars, "
-            f"FPS={run.fps}, FRAMES={run.frames}"
+            f"FPS={run.fps}, FRAMES={run.frames}",
+            flush=True,
         )
     else:
         # Seed before road generation so the whole scene is reproducible.
@@ -111,44 +112,25 @@ def run_simulation(cfg_road, cfg_car, cfg_simulation, run):
     if spawn_plan is None:
         for _ in range(cfg_car.num_cars_initially):
             spawn_car(len(cars) + 1, None, None, 0)
-    else:
-        # Cars with id <= num_cars_initially and spawn frame 0 belong to the
-        # opening fleet; the rest are spawned after the first frame.
-        initial = []
-        rest = []
-        for entry in spawn_plan.get(0, []):
-            if entry[0] is not None and entry[0] <= cfg_car.num_cars_initially:
-                initial.append(entry)
-            else:
-                rest.append(entry)
-        spawn_plan[0] = rest
-        for car_id, start, end in initial:
-            spawn_car(car_id, start, end, 0)
-
-    # ------------------------------------------------------------------ #
-    # PROCESSING
-    # ------------------------------------------------------------------ #
-    frames = []
-    for t in tqdm(range(run.frames + 1)):
-        processing.whole_process(
-            G, cars, cfg_car, cfg_simulation, t, fps=run.fps
-        )
-        if (
-            run.show_mid_process
-            and run.frames_per_output > 0
-            and t % run.frames_per_output == 0
-        ):
-            visualize.draw(
-                G, cars, t, frames, cfg_simulation.standard_speed, run
-            )
-        if spawn_plan is None:
+        # UXsim needs every vehicle before the run starts, so materialise the
+        # same per-frame random spawn decisions here. This consumes random()
+        # in exactly the same order as the old frame loop.
+        for t in range(run.frames + 1):
             if random.random() < cfg_car.new_car_prob:
                 low, high = cfg_car.new_car_range
                 for _ in range(random.randint(low, high)):
                     spawn_car(len(cars) + 1, None, None, t)
-        else:
-            for car_id, start, end in spawn_plan.get(t, []):
-                spawn_car(car_id, start, end, t)
+    else:
+        for frame in sorted(spawn_plan):
+            for car_id, start, end in spawn_plan[frame]:
+                spawn_car(car_id, start, end, frame)
+
+    # ------------------------------------------------------------------ #
+    # PROCESSING
+    # ------------------------------------------------------------------ #
+    result = simulation.run_simulation(G, cars, cfg_simulation, run)
+    frames = result.get("frames", [])
+    native_gif = result.get("gif_path")
 
     # ------------------------------------------------------------------ #
     # CALCULATE RESULTS
@@ -245,7 +227,9 @@ def run_simulation(cfg_road, cfg_car, cfg_simulation, run):
     report_path = recording.save_logs(summary)
     result_congestion.draw(G, summary, run, cfg_simulation.standard_speed)
     if run.generate_gif:
-        if frames:
+        if native_gif:
+            print(f"[done] UXsim gif: {native_gif}")
+        elif frames:
             os.makedirs("logs/gif", exist_ok=True)
             stamp = strftime("%Y%m%d-%H%M%S", localtime(now()))
             gif_path = f"logs/gif/traffic-{stamp}.gif"
@@ -256,10 +240,11 @@ def run_simulation(cfg_road, cfg_car, cfg_simulation, run):
                     counter += 1
                 gif_path = f"{base}-{counter}{ext}"
             imageio.mimsave(gif_path, frames, fps=run.gif_fps)
+            print(f"[done] custom gif: {gif_path}")
         else:
             print(
                 "[warn] GENERATE_GIF is on but no frames were drawn; "
-                "set SHOW_MID_PROCESS=True"
+                "set GIF_ENGINE='uxsim' (or 'auto') for UXsim's native GIF"
             )
 
     print(
@@ -307,6 +292,8 @@ def main():
         replay_report=attributes.REPLAY_REPORT,
         seed=attributes.SEED,
         gif_fps=attributes.GIF_FPS,
+        gif_engine=attributes.GIF_ENGINE,
+        gif_timestep_skip=attributes.GIF_TIMESTEP_SKIP,
     )
     run_simulation(cfg_road, cfg_car, cfg_simulation, run)
 

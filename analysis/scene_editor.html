@@ -91,6 +91,16 @@
   th,td{text-align:left;padding:4px 6px;border-bottom:1px solid var(--line)}
   th{color:var(--muted);font-weight:500}
   .scroll{max-height:260px;overflow:auto;border:1px solid var(--line);border-radius:6px}
+  details.legacyBox{margin:18px 0 4px;border:1px solid var(--line);border-radius:8px;
+                    background:var(--panel2);padding:0 10px}
+  details.legacyBox summary{cursor:pointer;color:var(--muted);font-size:12px;
+                            padding:8px 0;list-style:none}
+  details.legacyBox summary::-webkit-details-marker{display:none}
+  details.legacyBox summary:before{content:'▸ ';color:var(--accent)}
+  details.legacyBox[open] summary:before{content:'▾ '}
+  details.legacyBox[open] summary{color:var(--fg);border-bottom:1px solid var(--line);
+                                  margin-bottom:4px}
+  details.legacyBox h4{margin-top:12px}
   .trash{cursor:pointer;color:#ffb4ae;background:none;border:none;padding:0 2px;font-size:13px}
   footer{display:flex;align-items:center;gap:16px;padding:7px 12px;background:var(--panel);
          border-top:1px solid var(--line);color:var(--muted);font-size:12px;flex-wrap:wrap}
@@ -267,6 +277,8 @@ function defaultParams(){
       FRAMES_PER_OUTPUT: 30,
       GENERATE_GIF: false,
       GIF_FPS: 24,
+      GIF_ENGINE: 'auto',
+      GIF_TIMESTEP_SKIP: 24,
       SEED: null
     }
   };
@@ -391,6 +403,10 @@ function validateParams(){
   req(p.run.PIC_SCALE, 'PIC_SCALE', 0.01);
   req(p.run.FRAMES_PER_OUTPUT, 'FRAMES_PER_OUTPUT', 1, undefined, true);
   req(p.run.GIF_FPS, 'GIF_FPS', 1);
+  if (!['auto', 'custom', 'uxsim'].includes(p.run.GIF_ENGINE)){
+    e.push('GIF_ENGINE 只能是 auto / custom / uxsim');
+  }
+  req(p.run.GIF_TIMESTEP_SKIP, 'GIF_TIMESTEP_SKIP', 1, undefined, true);
   if (p.run.SEED !== null && (!Number.isInteger(p.run.SEED) || p.run.SEED < 0)){
     e.push('SEED 必须是空或非负整数');
   }
@@ -511,6 +527,19 @@ function validateAll(){
   }
   if (Number.isInteger(init) && init > MAX_CARS){
     errors.push(`初始车辆数超过编辑器上限 ${MAX_CARS}`);
+  }
+
+  if (p.run.GENERATE_GIF && p.run.GIF_ENGINE === 'custom' && !p.run.SHOW_MID_PROCESS){
+    warnings.push('GIF_ENGINE=custom 但没有过程帧，main.py 不会生成自定义 GIF');
+  }
+  if (p.run.GENERATE_GIF && p.run.GIF_ENGINE === 'uxsim' &&
+      Number.isFinite(p.run.FPS) && p.run.FPS > 0 &&
+      Number.isInteger(p.run.FRAMES) && Number.isInteger(p.run.GIF_TIMESTEP_SKIP) &&
+      p.run.GIF_TIMESTEP_SKIP > 0){
+    const nativeFrames = Math.ceil(((p.run.FRAMES + 1) * 3600 / p.run.FPS) / p.run.GIF_TIMESTEP_SKIP);
+    if (nativeFrames > 1200){
+      warnings.push(`UXsim 原生 GIF 约 ${nativeFrames} 帧，生成会较慢；可增大 GIF_TIMESTEP_SKIP`);
+    }
   }
 
   for (const c of S.manualCars){
@@ -1255,21 +1284,34 @@ function fieldBool(label, path, checked, help){
   </label>`;
 }
 
+function fieldSelect(label, path, value, unit, help, options){
+  const opts = options.map(([v, text]) =>
+    `<option value="${esc(v)}" ${String(value) === String(v) ? 'selected' : ''}>${esc(text)}</option>`
+  ).join('');
+  return `<label class="field">
+    <span class="head"><span>${esc(label)}</span>${unit ? `<span class="unit">${esc(unit)}</span>` : ''}</span>
+    <select data-path="${path}" data-kind="text">${opts}</select>
+    ${help ? `<span class="help">${esc(help)}</span>` : ''}
+  </label>`;
+}
+
 function renderParamsSide(){
   const p = S.params;
   $('side').innerHTML = `
     <h2>参数设置</h2>
-    <div class="note">这里对应报告里的 <code>params</code>。导出时 <code>num_nodes</code> 会自动同步为当前节点数；<code>REPLAY_REPORT</code> 不写入模板，由 main.py 配置。</div>
+    <div class="note">这里对应报告里的 <code>params</code>。导出时 <code>num_nodes</code> 会自动同步为当前节点数；<code>REPLAY_REPORT</code> 不写入模板，由 main.py 配置。已弃用的旧字段放在页面最下方，默认折叠，但仍会完整写入模板。</div>
     <div id="paramErrors" class="errors"></div>
 
     <h3>运行参数</h3>
     ${fieldInt('FPS', 'run.FPS', p.run.FPS, '帧/仿真小时', '时间步 = 3600/FPS 秒；默认 43200，即 1/12 秒一帧。', 1)}
     ${fieldInt('FRAMES', 'run.FRAMES', p.run.FRAMES, '最后一帧帧号', '总帧数 = FRAMES+1；曲线横轴范围是 0..FRAMES。修改后失焦生效，曲线末端会一起调整。', 1, MAX_FRAMES)}
     ${fieldNum('PIC_SCALE', 'run.PIC_SCALE', p.run.PIC_SCALE, '倍数', '输出图片尺寸倍数。', '0.1')}
-    ${fieldBool('SHOW_MID_PROCESS', 'run.SHOW_MID_PROCESS', p.run.SHOW_MID_PROCESS, '是否输出过程中间帧。')}
+    ${fieldBool('SHOW_MID_PROCESS', 'run.SHOW_MID_PROCESS', p.run.SHOW_MID_PROCESS, '是否输出过程中间帧；仅自定义 GIF 使用。')}
     ${fieldInt('FRAMES_PER_OUTPUT', 'run.FRAMES_PER_OUTPUT', p.run.FRAMES_PER_OUTPUT, '帧', '每多少仿真帧输出一张图。', 1)}
-    ${fieldBool('GENERATE_GIF', 'run.GENERATE_GIF', p.run.GENERATE_GIF, '是否收集帧并生成 GIF；需要 SHOW_MID_PROCESS=True。')}
+    ${fieldBool('GENERATE_GIF', 'run.GENERATE_GIF', p.run.GENERATE_GIF, '是否生成 GIF；auto 优先 UXsim 原生，有过程帧时才用项目渲染。')}
     ${fieldNum('GIF_FPS', 'run.GIF_FPS', p.run.GIF_FPS, '帧/秒', 'GIF 播放帧率，不是仿真帧率。', '0.1')}
+    ${fieldSelect('GIF_ENGINE', 'run.GIF_ENGINE', p.run.GIF_ENGINE, '引擎', 'auto=有过程帧用项目渲染，否则 UXsim 原生；custom=只用项目渲染；uxsim=只用 UXsim 原生。', [['auto', 'auto（推荐）'], ['custom', 'custom（项目渲染）'], ['uxsim', 'uxsim（原生）']])}
+    ${fieldInt('GIF_TIMESTEP_SKIP', 'run.GIF_TIMESTEP_SKIP', p.run.GIF_TIMESTEP_SKIP, '1 秒步', '仅 UXsim 原生 GIF：每 N 个 1 秒步取一帧；越大 GIF 越短、生成越快。', 1)}
     <label class="field">
       <span class="head"><span>SEED</span><span class="unit">整数或留空</span></span>
       <input type="text" data-path="run.SEED" data-kind="seed" value="${p.run.SEED === null ? '' : p.run.SEED}" placeholder="留空 = None">
@@ -1286,18 +1328,12 @@ function renderParamsSide(){
       <span class="readonly">${S.nodes.length}（由道路编辑器中的节点数自动同步）</span>
     </label>
     ${fieldInt('max_lanes', 'road.max_lanes', p.road.max_lanes, '条/方向', '每个方向的最大车道数；道路编辑器里的 lanes 不能超过它。', 1, 20)}
-    ${fieldInt('max_degree', 'road.max_degree', p.road.max_degree, 'legacy', '历史字段：当前 Default 生成器不读取；手绘路网也不使用。', 1)}
-    ${fieldNum('edge_prob', 'road.edge_prob', p.road.edge_prob, 'legacy', '历史字段：当前 Default 生成器不读取。', '0.01')}
-    <label class="field">
-      <span class="head"><span>force_single_road</span><span class="unit">JSON 数组，legacy</span></span>
-      <input type="text" data-path="road.force_single_road" data-kind="jsonarray" value="${esc(Array.isArray(p.road.force_single_road) ? JSON.stringify(p.road.force_single_road) : '[]')}">
-      <span class="help">历史字段：仅旧 core/road.py 使用；当前生成器和手绘图不使用。</span>
-    </label>
-    ${fieldInt('connection_limit', 'road.connection_limit', p.road.connection_limit, 'legacy', '历史字段：当前 Default 生成器不读取。', 0)}
-    ${fieldBool('ring', 'road.ring', p.road.ring, '历史字段：当前 Default 生成器不读取。')}
-    ${fieldNum('exp_road_length', 'road.exp_road_length', p.road.exp_road_length, '生成器单位', '历史参数；手绘路网的长度按几何距离自动计算，不受它影响。', '0.1')}
-    ${fieldNum('var_road_length', 'road.var_road_length', p.road.var_road_length, '比例', '历史参数；当前手绘图不使用。', '0.01')}
-    ${fieldNum('angle_variation', 'road.angle_variation', p.road.angle_variation, '弧度', '历史参数；当前手绘图不使用。', '0.01')}
+
+    <h3>道路生成参数（默认生成器）</h3>
+    <div class="note">这些字段供 Default 生成器使用；手绘模板的道路长度按两端坐标几何距离计算，不读这些字段，但导出仍会保留。</div>
+    ${fieldNum('exp_road_length', 'road.exp_road_length', p.road.exp_road_length, '生成器单位', '新节点到父节点的期望距离；手绘路网不使用。', '0.1')}
+    ${fieldNum('var_road_length', 'road.var_road_length', p.road.var_road_length, '比例', '道路长度相对波动；手绘路网不使用。', '0.01')}
+    ${fieldNum('angle_variation', 'road.angle_variation', p.road.angle_variation, '弧度', '道路方向角抖动；手绘路网不使用。', '0.01')}
 
     <h3>车辆参数</h3>
     ${fieldInt('num_cars_initially', 'cars.num_cars_initially', p.cars.num_cars_initially, '辆', '第 0 帧前生成的随机初始车辆；与车辆设置里的“初始随机车数”同步。', 0, MAX_CARS)}
@@ -1314,19 +1350,35 @@ function renderParamsSide(){
 
     <h3>仿真参数</h3>
     ${fieldNum('standard_speed', 'simulator.standard_speed', p.simulator.standard_speed, 'km/h', '最宽道路的自由流速度。', '0.1')}
-    ${fieldNum('car_length', 'simulator.car_length', p.simulator.car_length, 'km', '车长；默认 0.005 = 5 m。', '0.000001')}
-    ${fieldNum('minimum_distance', 'simulator.minimum_distance', p.simulator.minimum_distance, 'km', '静止最小间距；默认 0.002 = 2 m。', '0.000001')}
-    ${fieldNum('reaction_time', 'simulator.reaction_time', p.simulator.reaction_time, '小时', '旧密度公式使用；当前 IDM 不用。', '0.000001')}
     ${fieldNum('minimum_speed', 'simulator.minimum_speed', p.simulator.minimum_speed, 'km/h', '指标中的最低速度。', '0.1')}
     ${fieldNum('meters_per_unit', 'simulator.meters_per_unit', p.simulator.meters_per_unit, 'm/单位', '生成器单位到米的换算；默认 1 单位=10 m。', '0.1')}
     ${fieldNum('jam_density', 'simulator.jam_density', p.simulator.jam_density, 'veh/km/lane', '阻塞密度，用于拥堵公式。', '0.1')}
     ${fieldNum('lane_speed_step', 'simulator.lane_speed_step', p.simulator.lane_speed_step, 'km/h/车道', '每少一条车道损失的自由流速度。', '0.1')}
-    ${fieldNum('idm_accel', 'simulator.idm_accel', p.simulator.idm_accel, 'm/s²', 'IDM 最大加速度。', '0.01')}
-    ${fieldNum('idm_decel', 'simulator.idm_decel', p.simulator.idm_decel, 'm/s²', 'IDM 舒适减速度。', '0.01')}
-    ${fieldNum('idm_time_gap', 'simulator.idm_time_gap', p.simulator.idm_time_gap, 's', 'IDM 期望车头时距。', '0.01')}
-    ${fieldNum('idm_min_gap', 'simulator.idm_min_gap', p.simulator.idm_min_gap, 'm', 'IDM 静止间距。', '0.01')}
-    ${fieldNum('idm_delta', 'simulator.idm_delta', p.simulator.idm_delta, '—', 'IDM 自由流指数。', '0.01')}
-    ${fieldInt('log_every', 'simulator.log_every', p.simulator.log_every, '帧', '每 N 帧记录一次拥堵；默认 12 帧 = 1 秒。', 1)}
+    ${fieldInt('log_every', 'simulator.log_every', p.simulator.log_every, '帧', '每 N 帧记录一次拥堵；默认 12 帧 = 1 秒。UXsim 固定 1 秒步，N<12 只是重复同一秒快照。', 1)}
+
+    <details class="legacyBox">
+      <summary>已弃用参数（旧报告/旧生成器兼容，默认折叠）</summary>
+      <div class="note">以下字段当前主流程不读取，但为了旧报告回放和报告字段完整，仍会写入模板的 <code>params</code>。</div>
+      <h4>道路历史字段</h4>
+      ${fieldInt('max_degree', 'road.max_degree', p.road.max_degree, 'legacy', '旧无向生成器字段；Default 生成器不读取。', 1)}
+      ${fieldNum('edge_prob', 'road.edge_prob', p.road.edge_prob, 'legacy', '旧无向生成器字段；Default 生成器不读取。', '0.01')}
+      <label class="field">
+        <span class="head"><span>force_single_road</span><span class="unit">JSON 数组，legacy</span></span>
+        <input type="text" data-path="road.force_single_road" data-kind="jsonarray" value="${esc(Array.isArray(p.road.force_single_road) ? JSON.stringify(p.road.force_single_road) : '[]')}">
+        <span class="help">旧无向生成器字段；仅 core/road.py 使用。</span>
+      </label>
+      ${fieldInt('connection_limit', 'road.connection_limit', p.road.connection_limit, 'legacy', '旧无向生成器字段；Default 生成器不读取。', 0)}
+      ${fieldBool('ring', 'road.ring', p.road.ring, '旧无向生成器字段；Default 生成器不读取。')}
+      <h4>仿真历史字段（旧 IDM/密度）</h4>
+      ${fieldNum('car_length', 'simulator.car_length', p.simulator.car_length, 'km', '旧车长；UXsim Link 模型不读取。', '0.000001')}
+      ${fieldNum('minimum_distance', 'simulator.minimum_distance', p.simulator.minimum_distance, 'km', '旧静止最小间距；UXsim Link 模型不读取。', '0.000001')}
+      ${fieldNum('reaction_time', 'simulator.reaction_time', p.simulator.reaction_time, '小时', '旧 IDM/密度反应时间；UXsim 使用自身 1 秒步。', '0.000001')}
+      ${fieldNum('idm_accel', 'simulator.idm_accel', p.simulator.idm_accel, 'm/s²', '旧 IDM 最大加速度；UXsim 不读取。', '0.01')}
+      ${fieldNum('idm_decel', 'simulator.idm_decel', p.simulator.idm_decel, 'm/s²', '旧 IDM 舒适减速度；UXsim 不读取。', '0.01')}
+      ${fieldNum('idm_time_gap', 'simulator.idm_time_gap', p.simulator.idm_time_gap, 's', '旧 IDM 期望车头时距；UXsim 不读取。', '0.01')}
+      ${fieldNum('idm_min_gap', 'simulator.idm_min_gap', p.simulator.idm_min_gap, 'm', '旧 IDM 静止间距；UXsim 不读取。', '0.01')}
+      ${fieldNum('idm_delta', 'simulator.idm_delta', p.simulator.idm_delta, '—', '旧 IDM 自由流指数；UXsim 不读取。', '0.01')}
+    </details>
   `;
   updateParamErrors();
 }
@@ -1775,6 +1827,8 @@ function buildTemplate(){
     FRAMES_PER_OUTPUT: p.run.FRAMES_PER_OUTPUT,
     GENERATE_GIF: p.run.GENERATE_GIF,
     GIF_FPS: p.run.GIF_FPS,
+    GIF_ENGINE: p.run.GIF_ENGINE,
+    GIF_TIMESTEP_SKIP: p.run.GIF_TIMESTEP_SKIP,
     SEED: p.run.SEED
   };
 
@@ -2240,6 +2294,12 @@ function mergeImportedParams(src, nodes, roads){
   }
   if (!Number.isInteger(dst.cars.spawn_interval) || dst.cars.spawn_interval < 1){
     dst.cars.spawn_interval = 1;
+  }
+  if (!['auto', 'custom', 'uxsim'].includes(dst.run.GIF_ENGINE)){
+    dst.run.GIF_ENGINE = 'auto';
+  }
+  if (!Number.isInteger(dst.run.GIF_TIMESTEP_SKIP) || dst.run.GIF_TIMESTEP_SKIP < 1){
+    dst.run.GIF_TIMESTEP_SKIP = 24;
   }
   return dst;
 }
